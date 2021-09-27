@@ -23,44 +23,21 @@
  *
  * date         : 2021.09.01
  * creater      : EasyOops
- * description  : redux Action
+ * description  : CircleCI define
  **/
-import { _ajaxPostJsonAsync } from "../../axios/axios";
-import {
-    SAMPLE_ADD,
-    SAMPLE_DEL,
-    SAMPLE_FAIL,
-    SAMPLE_GET,
-    SAMPLE_GET_INFO,
-    SAMPLE_UPD
-} from "../types";
+import { jobs_main } from "./jobs";
+// import { defaults_main } from "./defaults";
+import { workflows_main } from "./workflows";
 
-/* api path */
-const API_PATH = "/api/v1/";
+/* config >> cricleci */
+export const config_cricleci = () => {
 
-/* list */
-export const getSample = async (body) => {
-    body['limit'] = '1000';
-    return await _ajaxPostJsonAsync("post", API_PATH+"/search/", body, SAMPLE_GET, SAMPLE_FAIL);
-}
+    let jsonroot = {};
 
-/* select */
-export const getSampleInfo = async (body) => {
-    body['limit'] = '1';
-    return await _ajaxPostJsonAsync("post", API_PATH+"/search/", body, SAMPLE_GET_INFO, SAMPLE_FAIL);
-}
+    jsonroot['version'] = 2;
+    //jsonroot['defaults'] = defaults_main();
+    jsonroot['workflows'] = workflows_main();
+    jsonroot['jobs'] = jobs_main();
 
-/* insert */
-export const addSample = async (d) => {
-    return await _ajaxPostJsonAsync("post", API_PATH+"/", d, SAMPLE_ADD, SAMPLE_FAIL);
-}
-
-/* update */
-export const updSample = async (d) => {
-    return await _ajaxPostJsonAsync("put", API_PATH+"/"+d, d, SAMPLE_UPD, SAMPLE_FAIL);
-}
-
-/* delete */
-export const delSample = async (d) => {
-    return await _ajaxPostJsonAsync("delete", API_PATH+"/"+d, d, SAMPLE_DEL, SAMPLE_FAIL);
-}
+    return jsonroot;
+};

@@ -23,44 +23,40 @@
  *
  * date         : 2021.09.01
  * creater      : EasyOops
- * description  : redux Action
+ * description  : CircleCI defaults define
  **/
-import { _ajaxPostJsonAsync } from "../../axios/axios";
-import {
-    SAMPLE_ADD,
-    SAMPLE_DEL,
-    SAMPLE_FAIL,
-    SAMPLE_GET,
-    SAMPLE_GET_INFO,
-    SAMPLE_UPD
-} from "../types";
+/* defaults >> main */
+export const defaults_main = () => {
 
-/* api path */
-const API_PATH = "/api/v1/";
+    let jsonjobs = {};
 
-/* list */
-export const getSample = async (body) => {
-    body['limit'] = '1000';
-    return await _ajaxPostJsonAsync("post", API_PATH+"/search/", body, SAMPLE_GET, SAMPLE_FAIL);
+    jsonjobs['docker'] = defaults_docker('zlot1112/gk_test:0.1');
+    jsonjobs['environment'] = defaults_environment();
+    jsonjobs['working_directory'] = '~/gk-admin';
+    jsonjobs['resource_class'] = 'large';
+
+    return jsonjobs;
 }
 
-/* select */
-export const getSampleInfo = async (body) => {
-    body['limit'] = '1';
-    return await _ajaxPostJsonAsync("post", API_PATH+"/search/", body, SAMPLE_GET_INFO, SAMPLE_FAIL);
-}
+/* defaults >> docker */
+export const defaults_docker = (_in) => {
 
-/* insert */
-export const addSample = async (d) => {
-    return await _ajaxPostJsonAsync("post", API_PATH+"/", d, SAMPLE_ADD, SAMPLE_FAIL);
-}
+    let jsonObj = {};
+    let jsonArr = [];
 
-/* update */
-export const updSample = async (d) => {
-    return await _ajaxPostJsonAsync("put", API_PATH+"/"+d, d, SAMPLE_UPD, SAMPLE_FAIL);
-}
+    jsonObj['image'] = _in;
+    jsonArr.push(jsonObj);
 
-/* delete */
-export const delSample = async (d) => {
-    return await _ajaxPostJsonAsync("delete", API_PATH+"/"+d, d, SAMPLE_DEL, SAMPLE_FAIL);
-}
+    return jsonArr;
+};
+
+/* defaults >> environment */
+export const defaults_environment = () => {
+
+    let jsonObj = {};
+
+    jsonObj['JVM_OPTS'] = '-Xmx4096m';
+    jsonObj['TERM'] = 'dumb';
+
+    return jsonObj;
+};
