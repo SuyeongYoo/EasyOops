@@ -27,9 +27,11 @@
 **/
 import { combineReducers } from "redux";
 import sample from "./SampleReducer";
+import cricleci from "./CircleciReducer";
 
 const rootReducer = combineReducers({
-    sample
+    sample,
+    cricleci
 });
 
 export default rootReducer;

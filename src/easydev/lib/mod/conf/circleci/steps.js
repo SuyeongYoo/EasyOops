@@ -109,26 +109,28 @@ export const steps_run_integration_test = () => {
 };
 
 /* steps >> s3_upload */
-export const steps_s3_upload = () => {
+export const steps_s3_upload = (_in) => {
 
     let jsonObj = {};
     let jsonObj2 = {};
 
     jsonObj2['name'] = 'Upload to S3';
-    jsonObj2['command'] = 'aws s3 cp target/*.jar s3://st-gk-deploy/eu-central-1/CircleCI/';
+    //jsonObj2['command'] = 'aws s3 cp target/*.jar s3://st-gk-deploy/eu-central-1/CircleCI/';
+    jsonObj2['command'] = 'aws s3 cp target/*.jar '+_in.s3_access;
     jsonObj['run'] = jsonObj2;
 
     return jsonObj;
 };
 
 /* steps >> ec2_deploy */
-export const steps_ec2_deploy = () => {
+export const steps_ec2_deploy = (_in) => {
 
     let jsonObj = {};
     let jsonObj2 = {};
 
     jsonObj2['name'] = 'Deploy to Ec2';
-    jsonObj2['command'] = 'aws configure set region eu-central-1\naws ssm send-command --document-name "AWS-RunShellScript" --comment "s3get" --instance-ids "i-032445019bed09dfb" --parameters commands=["aws s3 cp s3://st-gk-deploy/eu-central-1/CircleCI/circleci-0.0.1-SNAPSHOT.jar /home/jinkyu.id/","echo $?"] --output text > result.txt\ncat result.txt\n';
+    //jsonObj2['command'] = 'aws configure set region eu-central-1\naws ssm send-command --document-name "AWS-RunShellScript" --comment "s3get" --instance-ids "i-032445019bed09dfb" --parameters commands=["aws s3 cp s3://st-gk-deploy/eu-central-1/CircleCI/circleci-0.0.1-SNAPSHOT.jar /home/jinkyu.id/","echo $?"] --output text > deploy_logs.txt\ncat deploy_logs.txt\n';
+    jsonObj2['command'] = 'aws configure set region '+_in.aws_region+'\naws ssm send-command --document-name "AWS-RunShellScript" --comment "s3get" --instance-ids "'+_in.aws_instance+'" --parameters commands=["aws s3 cp '+_in.s3_access+'/circleci-0.0.1-SNAPSHOT.jar /home/jinkyu.id/","echo $?"] --output text > deploy_logs.txt\ncat deploy_logs.txt\n';
     jsonObj['run'] = jsonObj2;
 
     return jsonObj;
@@ -140,7 +142,7 @@ export const steps_store_test_results = () => {
     let jsonObj = {};
     let jsonObj2 = {};
 
-    jsonObj2['path'] = './gk-admin/test-reports';
+    jsonObj2['path'] = './devops/test_logs';
     jsonObj['store_test_results'] = jsonObj2;
 
     return jsonObj;

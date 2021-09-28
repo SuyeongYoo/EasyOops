@@ -30,6 +30,9 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React from 'react';
+import { useEffect, useCallback } from 'react';
+import { useDispatch, useSelector } from "react-redux";
+import { _isEmpty } from "../../lib/common";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -38,12 +41,35 @@ const useStyles = makeStyles((theme) => ({
 
 const Start = () => {
     const classes = useStyles();
+    const dispatch = useDispatch();
 
-    const [alignment, setAlignment] = React.useState('01');
+    const circleci = useSelector((state) => state.cricleci);
 
-    const handleChange = (event, newAlignment) => {
-        setAlignment(newAlignment);
-    };
+    const handleInit = useCallback(() => {
+        let payload = {};
+        if (!circleci.info.hasOwnProperty('tool_type')) {
+            payload['tool_type'] = '01';
+            dispatch({
+                type:'CIRCLECI_GET_INFO',
+                payload: payload
+            });
+        }
+    },[circleci.info, dispatch]);
+
+    useEffect(() => {
+        handleInit();
+    }, [handleInit]);
+    
+    const handleChange = useCallback((e, v) => {
+        let payload = {}
+        if (!_isEmpty(v)) {
+            payload['tool_type'] = v;
+            dispatch({
+                type:'CIRCLECI_GET_INFO',
+                payload: payload
+            });
+        }
+    },[dispatch]);
 
     return (
         <React.Fragment>
@@ -61,7 +87,7 @@ const Start = () => {
                 <Grid item xs={12} md={5}>
                     <ToggleButtonGroup
                         color="primary"
-                        value={alignment}
+                        value={circleci.info.tool_type}
                         exclusive
                         size={"large"}
                         onChange={handleChange}

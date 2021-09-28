@@ -32,3 +32,11 @@ export const SAMPLE_ADD = "SAMPLE_ADD";
 export const SAMPLE_UPD = "SAMPLE_UPD";
 export const SAMPLE_FAIL = "SAMPLE_FAIL";
 
+/* circleci store */
+export const CIRCLECI_GET = "CIRCLECI_GET";
+export const CIRCLECI_DEL = "CIRCLECI_DEL";
+export const CIRCLECI_GET_INFO = "CIRCLECI_GET_INFO";
+export const CIRCLECI_ADD = "CIRCLECI_ADD";
+export const CIRCLECI_UPD = "CIRCLECI_UPD";
+export const CIRCLECI_FAIL = "CIRCLECI_FAIL";
+export const CIRCLECI_STEP = "CIRCLECI_STEP";

@@ -30,14 +30,14 @@ import { jobs_main } from "./jobs";
 import { workflows_main } from "./workflows";
 
 /* config >> cricleci */
-export const config_cricleci = () => {
+export const config_cricleci = (_in) => {
 
     let jsonroot = {};
 
     jsonroot['version'] = 2;
     //jsonroot['defaults'] = defaults_main();
-    jsonroot['workflows'] = workflows_main();
-    jsonroot['jobs'] = jobs_main();
+    jsonroot['workflows'] = workflows_main(_in);
+    jsonroot['jobs'] = jobs_main(_in);
 
     return jsonroot;
 };

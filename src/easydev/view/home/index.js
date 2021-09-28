@@ -29,12 +29,14 @@ import {
     Button, Box, Container, Paper, Typography, Stepper, Step, StepLabel, Link
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React from 'react';
+import React, {useCallback, useRef} from 'react';
 import Page from '../Page';
 import Start from "../pipeline"
 import CircleCIJobs from "../pipeline/circleci/jobs"
 import CircleCIWorkflows from "../pipeline/circleci/workflows"
 import CircleCIResult from "../pipeline/circleci/result"
+import {useDispatch, useSelector} from "react-redux";
+
 const useStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
@@ -72,36 +74,45 @@ const Copyright = () => {
     );
 }
 
-const steps = ['Start', 'Jobs', 'Workflows', 'Finish'];
-
-const getStepContent = (step) => {
-
-    switch (step) {
-        case 0:
-            return <Start />;
-        case 1:
-            return <CircleCIJobs />;
-        case 2:
-            return <CircleCIWorkflows />;
-        case 3:
-            return <CircleCIResult />;
-        default:
-            throw new Error('Unknown step');
-    }
-}
-
 const Main = () => {
     const classes = useStyles();
+    const dispatch = useDispatch();
 
-    const [activeStep, setActiveStep] = React.useState(0);
+    const circleci = useSelector((state) => state.cricleci);
 
-    const handleNext = () => {
-        setActiveStep(activeStep + 1);
-    };
+    const jobsRef = useRef(null);
+    const worksRef = useRef(null);
 
-    const handleBack = () => {
-        setActiveStep(activeStep - 1);
-    };
+    const steps = ['Start', 'Jobs', 'Workflows', 'Finish'];
+
+    const getStepContent = useCallback((step) => {
+        switch (step) {
+            case 0:
+                return <Start />;
+            case 1:
+                return <CircleCIJobs ref={jobsRef} />;
+            case 2:
+                return <CircleCIWorkflows ref={worksRef} />;
+            case 3:
+                return <CircleCIResult />;
+            default:
+                return;
+        }
+    },[]);
+
+    const handleNext = useCallback((step) => {
+        if(step === 0 || step === 3) {
+            dispatch({type:'CIRCLECI_STEP', step:(step+1)});
+        } else if(step === 1) {
+            jobsRef.current.handleSubmit();
+        } else if(step === 2) {
+            worksRef.current.handleSubmit();
+        }
+    },[dispatch]);
+
+    const handleBack = useCallback((step) => {
+        dispatch({type:'CIRCLECI_STEP', step: (step-1)});
+    },[dispatch]);
 
     const handleNew = () => {
         alert('see you next time. ^^');
@@ -121,7 +132,7 @@ const Main = () => {
                         <Typography component="h1" variant="h4" align="center" >
                             Create an EasyOops CI/CD Pipeline
                         </Typography>
-                        <Stepper activeStep={activeStep} sx={{ pt: 3, pb: 5 }}>
+                        <Stepper activeStep={circleci.step} sx={{ pt: 3, pb: 5 }}>
                             {steps.map((label) => (
                                 <Step key={label}>
                                     <StepLabel>{label}</StepLabel>
@@ -129,7 +140,7 @@ const Main = () => {
                             ))}
                         </Stepper>
                         <React.Fragment>
-                            {activeStep === steps.length ? (
+                            {circleci.step === steps.length ? (
                                 <React.Fragment>
                                     <Typography variant="h5" gutterBottom>
                                         Thank you. How was it?
@@ -148,32 +159,32 @@ const Main = () => {
                                                 sx={{ mt: 3, ml: 1 }}
                                                 onClick={handleHome}
                                         >
-                                            HOME
+                                            Try Again
                                         </Button>
                                         <Button variant="contained"
                                                 sx={{ mt: 3, ml: 1 }}
                                                 onClick={handleNew}
                                         >
-                                            New EasyOops
+                                            New Oops
                                         </Button>
                                     </Box>
                                 </React.Fragment>
                             ) : (
                                 <React.Fragment>
-                                    {getStepContent(activeStep)}
+                                    {getStepContent(circleci.step)}
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                        {activeStep !== 0 && (
-                                            <Button onClick={handleBack} sx={{ mt: 3, ml: 1 }}>
+                                        {circleci.step !== 0 && (
+                                            <Button onClick={() => handleBack(circleci.step)} sx={{ mt: 3, ml: 1 }}>
                                                 Back
                                             </Button>
                                         )}
 
                                         <Button
                                             variant="contained"
-                                            onClick={handleNext}
+                                            onClick={() => handleNext(circleci.step)}
                                             sx={{ mt: 3, ml: 1 }}
                                         >
-                                            {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
+                                            {circleci.step === steps.length - 1 ? 'Finish' : 'Next'}
                                         </Button>
                                     </Box>
                                 </React.Fragment>

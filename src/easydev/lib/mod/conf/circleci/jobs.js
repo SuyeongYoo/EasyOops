@@ -44,14 +44,14 @@ import {
 } from "./defaults";
 
 /* jobs >> main */
-export const jobs_main = () => {
+export const jobs_main = (_in) => {
 
     let jsonjobs = {};
 
     jsonjobs['build'] = jobs_build();
     jsonjobs['test'] = jobs_test();
-    jsonjobs['upload'] = jobs_upload();
-    jsonjobs['deploy'] = jobs_deploy();
+    jsonjobs['upload'] = jobs_upload(_in);
+    jsonjobs['deploy'] = jobs_deploy(_in);
 
     return jsonjobs;
 }
@@ -95,13 +95,13 @@ export const jobs_test = () => {
 };
 
 /* jobs >> upload */
-export const jobs_upload = () => {
+export const jobs_upload = (_in) => {
 
     let jsonObj = {};
     let jsonArr = [];
 
     jsonArr.push(steps_attach_workspace());
-    jsonArr.push(steps_s3_upload());
+    jsonArr.push(steps_s3_upload(_in));
 
     jsonObj = defaults_main(jsonObj);
     jsonObj['steps'] = jsonArr;
@@ -110,14 +110,14 @@ export const jobs_upload = () => {
 };
 
 /* jobs >> deploy */
-export const jobs_deploy = () => {
+export const jobs_deploy = (_in) => {
 
     let jsonObj = {};
     let jsonArr = [];
 
     jsonArr.push(steps_attach_workspace());
-    jsonArr.push(steps_ec2_deploy());
-    jsonArr.push(steps_store_artifacts('result.txt'));
+    jsonArr.push(steps_ec2_deploy(_in));
+    jsonArr.push(steps_store_artifacts('deploy_logs.txt'));
 
     jsonObj = defaults_main(jsonObj);
     jsonObj['steps'] = jsonArr;

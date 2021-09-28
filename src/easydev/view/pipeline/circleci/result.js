@@ -32,6 +32,7 @@ import { makeStyles } from '@mui/styles';
 import React from 'react';
 import {_fileDownload, _jsonToYaml} from "../../../lib/common";
 import {config_cricleci} from "../../../lib/mod/conf/circleci";
+import {useSelector} from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -61,8 +62,10 @@ const useStyles = makeStyles((theme) => ({
 const Result = () => {
     const classes = useStyles();
 
+    const circleci = useSelector((state) => state.cricleci);
+
     const handleDownload = () => {
-        let value = _jsonToYaml(config_cricleci());
+        let value = _jsonToYaml(config_cricleci(circleci.info));
         let name = 'config.yml';
         _fileDownload(name, value);
     };
@@ -84,7 +87,7 @@ const Result = () => {
                         className={classes.paper}
                         aria-label="maximum height"
                         placeholder="Maximum 4 rows"
-                        defaultValue={_jsonToYaml(config_cricleci())}
+                        defaultValue={_jsonToYaml(config_cricleci(circleci.info))}
                         style={{ width: '100%' }}
                     />
                 </Grid>

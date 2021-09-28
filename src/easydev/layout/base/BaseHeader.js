@@ -54,7 +54,7 @@ const BaseHeader = () => {
                     <Menu />
                 </IconButton>
                 <Typography variant="h6" className={classes.title}>
-                    Easy Oops
+                    EasyOops
                 </Typography>
                 <Button color="inherit">Login</Button>
             </Toolbar>

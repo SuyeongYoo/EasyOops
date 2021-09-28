@@ -27,22 +27,32 @@
  **/
 
 /* workflows >> main */
-export const workflows_main = () => {
+import {_isEmpty} from "../../../common";
 
-    let jsonjobs = {};
-    jsonjobs['version'] = 2;
-    // temp data config
-    jsonjobs['develop'] = workflows_jobs_main('01','develop');
-    jsonjobs['staging'] = workflows_jobs_main('02','release');
-    jsonjobs['production'] = workflows_jobs_main('03','master');
+export const workflows_main = (_in) => {
 
-    return jsonjobs;
+    let jsonJobs = {};
+    jsonJobs['version'] = 2;
+
+    if(!_isEmpty(_in.git_develop_name)) {
+        jsonJobs['develop'] = workflows_jobs_main('01', _in.git_develop_name);
+    }
+
+    if(!_isEmpty(_in.git_release_name)) {
+        jsonJobs['staging'] = workflows_jobs_main('02', _in.git_release_name);
+    }
+
+    if(!_isEmpty(_in.git_master_name)) {
+        jsonJobs['production'] = workflows_jobs_main('03', _in.git_master_name);
+    }
+
+    return jsonJobs;
 }
 
 /* workflows >> jobs >> main */
 export const workflows_jobs_main = (_type, _in) => {
 
-    let jsonjobs = {};
+    let jsonJobs = {};
     let jsonArr = [];
 
     // temp data config
@@ -63,22 +73,22 @@ export const workflows_jobs_main = (_type, _in) => {
         jsonArr.push(workflows_jobs_deploy(_type));
     }
 
-    jsonjobs['jobs'] = jsonArr;
-    return jsonjobs;
+    jsonJobs['jobs'] = jsonArr;
+    return jsonJobs;
 }
 
 /* workflows >> jobs >> build */
 export const workflows_jobs_build = (_in) => {
 
     let jsonObj = {};
-    let jsonfilters = {};
-    let jsonbranches = {};
-    let jsononly = {};
+    let jsonFilters = {};
+    let jsonBranches = {};
+    let jsonOnly = {};
 
-    jsononly['only'] = _in;
-    jsonbranches['branches'] = jsononly;
-    jsonfilters['filters'] = jsonbranches;
-    jsonObj['build'] = jsonfilters;
+    jsonOnly['only'] = _in;
+    jsonBranches['branches'] = jsonOnly;
+    jsonFilters['filters'] = jsonBranches;
+    jsonObj['build'] = jsonFilters;
 
     return jsonObj;
 };
@@ -87,12 +97,12 @@ export const workflows_jobs_build = (_in) => {
 export const workflows_jobs_test = () => {
 
     let jsonObj = {};
-    let jsonrequires = {};
-    let jsonbuild = [];
+    let jsonRequires = {};
+    let jsonBuild = [];
 
-    jsonbuild.push('build');
-    jsonrequires['requires'] = jsonbuild;
-    jsonObj['test'] = jsonrequires;
+    jsonBuild.push('build');
+    jsonRequires['requires'] = jsonBuild;
+    jsonObj['test'] = jsonRequires;
 
     return jsonObj;
 };
@@ -101,15 +111,15 @@ export const workflows_jobs_test = () => {
 export const workflows_jobs_upload = (_type) => {
 
     let jsonObj = {};
-    let jsonrequires = {};
-    let jsonbuild = [];
+    let jsonRequires = {};
+    let jsonBuild = [];
 
-    jsonbuild.push('build');
+    jsonBuild.push('build');
     if(_type === '01') {
-        jsonbuild.push('test');
+        jsonBuild.push('test');
     }
-    jsonrequires['requires'] = jsonbuild;
-    jsonObj['upload'] = jsonrequires;
+    jsonRequires['requires'] = jsonBuild;
+    jsonObj['upload'] = jsonRequires;
 
     return jsonObj;
 };
@@ -118,17 +128,17 @@ export const workflows_jobs_upload = (_type) => {
 export const workflows_jobs_hold = (_type) => {
 
     let jsonObj = {};
-    let jsonrequires = {};
-    let jsonbuild = [];
+    let jsonRequires = {};
+    let jsonBuild = [];
 
-    jsonrequires['type'] = 'approval';
-    jsonbuild.push('build');
+    jsonRequires['type'] = 'approval';
+    jsonBuild.push('build');
     if(_type === '01') {
-        jsonbuild.push('test');
+        jsonBuild.push('test');
     }
-    jsonrequires['requires'] = jsonbuild;
+    jsonRequires['requires'] = jsonBuild;
 
-    jsonObj['hold'] = jsonrequires;
+    jsonObj['hold'] = jsonRequires;
 
     return jsonObj;
 };
@@ -137,17 +147,17 @@ export const workflows_jobs_hold = (_type) => {
 export const workflows_jobs_deploy = (_type) => {
 
     let jsonObj = {};
-    let jsonrequires = {};
-    let jsonbuild = [];
+    let jsonRequires = {};
+    let jsonBuild = [];
 
-    jsonbuild.push('build');
+    jsonBuild.push('build');
     if(_type === '01') {
-        jsonbuild.push('test');
+        jsonBuild.push('test');
     }
-    jsonbuild.push('upload');
-    jsonrequires['requires'] = jsonbuild;
+    jsonBuild.push('upload');
+    jsonRequires['requires'] = jsonBuild;
 
-    jsonObj['deploy'] = jsonrequires;
+    jsonObj['deploy'] = jsonRequires;
 
     return jsonObj;
 };
