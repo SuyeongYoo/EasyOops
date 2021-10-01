@@ -39,11 +39,11 @@ export const workflows_main = (_in) => {
     }
 
     if(!_isEmpty(_in.git_release_name)) {
-        jsonJobs['staging'] = workflows_jobs_main('02', _in.git_release_name);
+        jsonJobs['staging'] = workflows_jobs_main('02', _in.git_release_name, _in.jobs_test_used);
     }
 
     if(!_isEmpty(_in.git_master_name)) {
-        jsonJobs['production'] = workflows_jobs_main('03', _in.git_master_name);
+        jsonJobs['production'] = workflows_jobs_main('03', _in.git_master_name, _in.jobs_test_used);
     }
 
     return jsonJobs;
@@ -61,18 +61,18 @@ export const workflows_jobs_main = (_type, _in, _junit) => {
         if(_junit === '01') {
             jsonArr.push(workflows_jobs_test());
         }
-        jsonArr.push(workflows_jobs_upload(_type));
-        jsonArr.push(workflows_jobs_deploy(_type));
+        jsonArr.push(workflows_jobs_upload(_junit));
+        jsonArr.push(workflows_jobs_deploy(_junit));
     } else if(_type === '02') {  // release
         jsonArr.push(workflows_jobs_build(_in));
-        jsonArr.push(workflows_jobs_upload(_type));
-        jsonArr.push(workflows_jobs_hold(_type));
-        jsonArr.push(workflows_jobs_deploy(_type));
+        jsonArr.push(workflows_jobs_upload(_junit));
+        jsonArr.push(workflows_jobs_hold(_junit));
+        jsonArr.push(workflows_jobs_deploy(_junit));
     } else if(_type === '03') {  // master
         jsonArr.push(workflows_jobs_build(_in));
-        jsonArr.push(workflows_jobs_upload(_type));
-        jsonArr.push(workflows_jobs_hold(_type));
-        jsonArr.push(workflows_jobs_deploy(_type));
+        jsonArr.push(workflows_jobs_upload(_junit));
+        jsonArr.push(workflows_jobs_hold(_junit));
+        jsonArr.push(workflows_jobs_deploy(_junit));
     }
 
     jsonJobs['jobs'] = jsonArr;
