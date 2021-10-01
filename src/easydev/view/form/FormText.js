@@ -23,40 +23,40 @@
  *
  * date         : 2021.09.01
  * creater      : EasyOops
- * description  : CircleCI defaults define
+ * description  : common form text
  **/
-/* defaults >> main */
-export const defaults_main = () => {
+import { TextField } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import React from "react";
+import {_isEmpty} from "../../lib/common";
 
-    let jsonJobs = {};
+const useStyles = makeStyles((theme) => ({
+    root: {}
+}));
 
-    jsonJobs['docker'] = defaults_docker('zlot1112/easy_oops:0.1');
-    jsonJobs['environment'] = defaults_environment();
-    jsonJobs['working_directory'] = '~/easy-oops';
-    jsonJobs['resource_class'] = 'large';
+const FormText = (props) => {
+    const classes = useStyles();
 
-    return jsonJobs;
-}
-
-/* defaults >> docker */
-export const defaults_docker = (_in) => {
-
-    let jsonObj = {};
-    let jsonArr = [];
-
-    jsonObj['image'] = _in;
-    jsonArr.push(jsonObj);
-
-    return jsonArr;
+    return (
+        <TextField
+            className={classes.root}
+            required={_isEmpty(props.required) ? false : true}
+            disabled={_isEmpty(props.disabled) ? false : true}
+            id={props.id}
+            label={props.label}
+            placeholder={props.placeholder}
+            fullWidth
+            autoComplete="cc-csc"
+            variant="standard"
+            value={props.value}
+            error={Boolean(props.touched && props.errors)}
+            helperText={props.touched && props.errors}
+            onBlur={props.onBlur}
+            onChange={props.onChange}
+            onClick={props.onClick}
+            InputLabelProps={{
+                shrink: true,
+            }} />
+    );
 };
-
-/* defaults >> environment */
-export const defaults_environment = () => {
-
-    let jsonObj = {};
-
-    jsonObj['JVM_OPTS'] = '-Xmx4096m';
-    jsonObj['TERM'] = 'dumb';
-
-    return jsonObj;
-};
+export default FormText;

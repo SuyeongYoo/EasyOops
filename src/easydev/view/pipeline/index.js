@@ -101,8 +101,6 @@ const Start = () => {
                     <Typography variant="caption" display="block" gutterBottom>
                         ● CircleCI - There is a cost to use the service. It provides easy UI/UX.
                     </Typography>
-                </Grid>
-                <Grid item xs={12}>
                     <Typography variant="caption" display="block" gutterBottom>
                         ● Jenkins - You need a server to use it. Jenkins must be installed on the server. Expansion is advantageous.
                     </Typography>

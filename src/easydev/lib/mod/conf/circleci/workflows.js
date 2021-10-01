@@ -35,7 +35,7 @@ export const workflows_main = (_in) => {
     jsonJobs['version'] = 2;
 
     if(!_isEmpty(_in.git_develop_name)) {
-        jsonJobs['develop'] = workflows_jobs_main('01', _in.git_develop_name);
+        jsonJobs['develop'] = workflows_jobs_main('01', _in.git_develop_name, _in.jobs_test_used);
     }
 
     if(!_isEmpty(_in.git_release_name)) {
@@ -50,7 +50,7 @@ export const workflows_main = (_in) => {
 }
 
 /* workflows >> jobs >> main */
-export const workflows_jobs_main = (_type, _in) => {
+export const workflows_jobs_main = (_type, _in, _junit) => {
 
     let jsonJobs = {};
     let jsonArr = [];
@@ -58,7 +58,9 @@ export const workflows_jobs_main = (_type, _in) => {
     // temp data config
     if(_type === '01') {         // develop
         jsonArr.push(workflows_jobs_build(_in));
-        jsonArr.push(workflows_jobs_test());
+        if(_junit === '01') {
+            jsonArr.push(workflows_jobs_test());
+        }
         jsonArr.push(workflows_jobs_upload(_type));
         jsonArr.push(workflows_jobs_deploy(_type));
     } else if(_type === '02') {  // release

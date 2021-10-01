@@ -26,7 +26,7 @@
  * description  : devops ci/cd pipeline workflows
  **/
 import {
-    Grid, Typography, TextField
+    Grid, Typography
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useRef} from 'react';
@@ -34,6 +34,8 @@ import {useDispatch, useSelector} from "react-redux";
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import {_isEmpty} from "../../../lib/common";
+import FormText from "../../form/FormText";
+import FormSelect from "../../form/FormSelect";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -70,11 +72,14 @@ const Workflows = forwardRef((props, ref) => {
 
         if (!circleci.info.hasOwnProperty('git_develop_name')
             || !circleci.info.hasOwnProperty('git_release_name')
-            || !circleci.info.hasOwnProperty('git_master_name')) {
+            || !circleci.info.hasOwnProperty('git_master_name')
+            || !circleci.info.hasOwnProperty('jobs_test_used')) {
             payload = circleci.info;
             payload['git_develop_name'] = '';
             payload['git_release_name'] = '';
             payload['git_master_name'] = '';
+            payload['jobs_test_used'] = '02';
+            payload['jobs_mvn_used'] = '02';
             dispatch({
                 type:'CIRCLECI_GET_INFO',
                 payload: payload
@@ -92,6 +97,8 @@ const Workflows = forwardRef((props, ref) => {
         payload['git_develop_name'] = v.git_develop_name;
         payload['git_release_name'] = v.git_release_name;
         payload['git_master_name'] = v.git_master_name;
+        payload['jobs_test_used'] = v.jobs_test_used;
+        payload['jobs_mvn_used'] = v.jobs_mvn_used;
         dispatch({
             type:'CIRCLECI_GET_INFO',
             payload: payload
@@ -107,10 +114,12 @@ const Workflows = forwardRef((props, ref) => {
                 initialValues={{
                     git_develop_name: _isEmpty(circleci.info.git_develop_name) ? '' : circleci.info.git_develop_name,
                     git_release_name: _isEmpty(circleci.info.git_release_name) ? '' : circleci.info.git_release_name,
-                    git_master_name: _isEmpty(circleci.info.git_master_name) ? '' : circleci.info.git_master_name
+                    git_master_name: _isEmpty(circleci.info.git_master_name) ? '' : circleci.info.git_master_name,
+                    jobs_test_used: _isEmpty(circleci.info.jobs_test_used) ? '02' : circleci.info.jobs_test_used,
+                    jobs_mvn_used: _isEmpty(circleci.info.jobs_mvn_used) ? '02' : circleci.info.jobs_mvn_used
                 }}
                 validationSchema={Yup.object().shape({
-                    // git_develop_name: Yup.string().required('Please enter your git branch(develop) name information to checkout.')
+                    git_develop_name: Yup.string().required('Please enter your git branch(develop) name information to checkout.')
                 })}
                 onSubmit={(v) => {
                     handleNext(v);
@@ -129,55 +138,71 @@ const Workflows = forwardRef((props, ref) => {
                               alignItems="center"
                         >
                             <Grid item xs={12}>
-                                <TextField
-                                    id="git_develop_name"
-                                    label="branch name(develop)"
-                                    placeholder="develop"
-                                    fullWidth
-                                    autoComplete="cc-csc"
-                                    variant="standard"
+                                <FormText
+                                    required={true}
+                                    id={"git_develop_name"}
+                                    label={"branch name(develop)"}
+                                    placeholder={"develop"}
                                     value={values.git_develop_name}
-                                    error={Boolean(touched.s3_access && errors.s3_access)}
-                                    helperText={touched.s3_access && errors.s3_access}
+                                    touched={touched.git_develop_name}
+                                    errors={errors.git_develop_name}
                                     onBlur={handleBlur}
                                     onChange={handleChange}
-                                    InputLabelProps={{
-                                        shrink: true,
-                                    }} />
+                                />
                             </Grid>
                             <Grid item xs={12}>
-                                <TextField
-                                    id="git_release_name"
-                                    label="branch name(release)"
-                                    placeholder="release"
-                                    helperText="Please enter your git branch(release) name information to checkout."
-                                    fullWidth
-                                    autoComplete="cc-csc"
-                                    variant="standard"
+                                <FormText
+                                    id={"git_release_name"}
+                                    label={"branch name(release)"}
+                                    placeholder={"release"}
+                                    //helperText="Please enter your git branch(release) name information to checkout."
                                     value={values.git_release_name}
+                                    touched={touched.git_release_name}
+                                    errors={errors.git_release_name}
                                     onBlur={handleBlur}
                                     onChange={handleChange}
-                                    //error={Boolean(touched && errors)}
-                                    InputLabelProps={{
-                                        shrink: true,
-                                    }} />
+                                />
                             </Grid>
                             <Grid item xs={12}>
-                                <TextField
-                                    id="git_master_name"
-                                    label="branch name(master)"
-                                    placeholder="master"
-                                    helperText="Please enter your git branch(master) name information to checkout."
-                                    fullWidth
-                                    autoComplete="cc-csc"
-                                    variant="standard"
+                                <FormText
+                                    id={"git_master_name"}
+                                    label={"branch name(master)"}
+                                    placeholder={"master"}
+                                    //helperText="Please enter your git branch(master) name information to checkout."
                                     value={values.git_master_name}
+                                    touched={touched.git_master_name}
+                                    errors={errors.git_master_name}
                                     onBlur={handleBlur}
                                     onChange={handleChange}
-                                    //error={Boolean(touched && errors)}
-                                    InputLabelProps={{
-                                        shrink: true,
-                                    }} />
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <FormSelect
+                                    id={"jobs_test_used"}
+                                    label={"JUnit Test"}
+                                    placeholder={"master"}
+                                    firstDefault={false}
+                                    item={[{"code":"01", "name":"use"},{"code":"02", "name":"do not used"}]}
+                                    value={values.jobs_test_used}
+                                    touched={touched.jobs_test_used}
+                                    errors={errors.jobs_test_used}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <FormSelect
+                                    id={"jobs_mvn_used"}
+                                    label={"Maven"}
+                                    placeholder={"master"}
+                                    firstDefault={false}
+                                    item={[{"code":"01", "name":"use"},{"code":"02", "name":"do not used"}]}
+                                    value={values.jobs_mvn_used}
+                                    touched={touched.jobs_mvn_used}
+                                    errors={errors.jobs_mvn_used}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                />
                             </Grid>
                             <Grid item xs={12}>
                                 <Typography variant="caption" display="block" gutterBottom>
