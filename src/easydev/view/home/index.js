@@ -32,7 +32,8 @@ import { makeStyles } from '@mui/styles';
 import React, {useCallback, useRef} from 'react';
 import Page from '../Page';
 import Start from "../pipeline"
-import CircleCIJobs from "../pipeline/circleci/jobs"
+import CircleCIJobsUpload from "../pipeline/circleci/jobs_upload"
+import CircleCIJobsDeploy from "../pipeline/circleci/jobs_deploy"
 import CircleCIWorkflows from "../pipeline/circleci/workflows"
 import CircleCIResult from "../pipeline/circleci/result"
 import {useDispatch, useSelector} from "react-redux";
@@ -80,7 +81,8 @@ const Main = () => {
 
     const circleci = useSelector((state) => state.cricleci);
 
-    const jobsRef = useRef(null);
+    const jobsUploadRef = useRef(null);
+    const jobsDeployRef = useRef(null);
     const worksRef = useRef(null);
 
     const steps = ['Start', 'Jobs', 'Workflows', 'Finish'];
@@ -90,10 +92,12 @@ const Main = () => {
             case 0:
                 return <Start />;
             case 1:
-                return <CircleCIJobs ref={jobsRef} />;
+                return <CircleCIJobsUpload ref={jobsUploadRef} />;
             case 2:
-                return <CircleCIWorkflows ref={worksRef} />;
+                return <CircleCIJobsDeploy ref={jobsDeployRef} />;
             case 3:
+                return <CircleCIWorkflows ref={worksRef} />;
+            case 4:
                 return <CircleCIResult />;
             default:
                 return;
@@ -101,11 +105,13 @@ const Main = () => {
     },[]);
 
     const handleNext = useCallback((step) => {
-        if(step === 0 || step === 3) {
+        if(step === 0 || step === 4) {
             dispatch({type:'CIRCLECI_STEP', step:(step+1)});
         } else if(step === 1) {
-            jobsRef.current.handleSubmit();
+            jobsUploadRef.current.handleSubmit();
         } else if(step === 2) {
+            jobsDeployRef.current.handleSubmit();
+        } else if(step === 3) {
             worksRef.current.handleSubmit();
         }
     },[dispatch]);
@@ -122,6 +128,19 @@ const Main = () => {
         window.location.href = '/';
     };
 
+    const stepChange = (step) => {
+        if(step === 1 || step === 2) {
+            step = 1
+        } else if(step === 3) {
+            step = 2
+        } else if(step === 4) {
+            step = 3
+        } else if(step === 5) {
+            step = 4
+        }
+        return step;
+    };
+
     return (
             <Page
                 className={classes.root}
@@ -132,7 +151,7 @@ const Main = () => {
                         <Typography component="h1" variant="h4" align="center" >
                             Create an EasyOops CI/CD Pipeline
                         </Typography>
-                        <Stepper activeStep={circleci.step} sx={{ pt: 3, pb: 5 }}>
+                        <Stepper activeStep={stepChange(circleci.step)} sx={{ pt: 3, pb: 5 }}>
                             {steps.map((label) => (
                                 <Step key={label}>
                                     <StepLabel>{label}</StepLabel>
@@ -140,7 +159,7 @@ const Main = () => {
                             ))}
                         </Stepper>
                         <React.Fragment>
-                            {circleci.step === steps.length ? (
+                            {stepChange(circleci.step) === steps.length ? (
                                 <React.Fragment>
                                     <Typography variant="h5" gutterBottom>
                                         Thank you. How was it?

@@ -115,7 +115,7 @@ export const steps_ssh_upload = (_in) => {
     let jsonObj2 = {};
 
     jsonObj2['name'] = 'Upload to SSH';
-    jsonObj2['command'] = 'scp -r target/*.jar'+_in.upload_svr_host+':'+_in.upload_svr_path;
+    jsonObj2['command'] = 'scp -q -r -o StrictHostKeyChecking=no target/*.jar'+_in.upload_svr_host+':'+_in.upload_svr_path;
     jsonObj['run'] = jsonObj2;
 
     return jsonObj;
@@ -143,9 +143,9 @@ export const steps_ssh_deploy = (_in) => {
 
     jsonObj2['name'] = 'Deploy to SSH';
     if(_in.jobs_upload_type === '01') {
-        jsonObj2['command'] = 'ssh '+_in.upload_svr_host+' "'+_in.deploy_was_stop+'; cp '+_in.upload_svr_path+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+'; '+_in.deploy_was_start+';"';
+        jsonObj2['command'] = 'ssh -p '+_in.upload_svr_port+' '+_in.upload_svr_host+' -o StrictHostKeyChecking=no "'+_in.deploy_was_stop+'; cp '+_in.upload_svr_path+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+'; '+_in.deploy_was_start+';"';
     } else if(_in.jobs_upload_type === '02') {
-        jsonObj2['command'] = 'ssh '+_in.upload_svr_host+' "'+_in.deploy_was_stop+'; aws s3 cp '+_in.s3_access+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+'; '+_in.deploy_was_start+';"';
+        jsonObj2['command'] = 'ssh -p '+_in.upload_svr_port+' '+_in.upload_svr_host+' -o StrictHostKeyChecking=no "'+_in.deploy_was_stop+'; aws s3 cp '+_in.s3_access+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+'; '+_in.deploy_was_start+';"';
     }
     jsonObj['run'] = jsonObj2;
 
@@ -160,10 +160,15 @@ export const steps_ec2_deploy = (_in) => {
 
     jsonObj2['name'] = 'Deploy to AWS(EC2)';
     //jsonObj2['command'] = 'aws configure set region eu-central-1\naws ssm send-command --document-name "AWS-RunShellScript" --comment "s3get" --instance-ids "i-032445019bed09dfb" --parameters commands=["aws s3 cp s3://st-gk-deploy/eu-central-1/CircleCI/circleci-0.0.1-SNAPSHOT.jar /home/jinkyu.id/","echo $?"] --output text > deploy_logs.txt\ncat deploy_logs.txt\n';
+    // if(_in.jobs_upload_type === '01') {
+    //     jsonObj2['command'] = 'aws configure set region '+_in.aws_region+'\naws ssm send-command --document-name "AWS-RunShellScript" --comment "s3get" --instance-ids "'+_in.aws_instance+'" --parameters commands=["'+_in.deploy_was_stop+'; cp '+_in.upload_svr_path+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+'; '+_in.deploy_was_start+'","echo $?"] --output text > deploy_logs.txt\ncat deploy_logs.txt\n';
+    // } else if(_in.jobs_upload_type === '02') {
+    //     jsonObj2['command'] = 'aws configure set region '+_in.aws_region+'\naws ssm send-command --document-name "AWS-RunShellScript" --comment "s3get" --instance-ids "'+_in.aws_instance+'" --parameters commands=["'+_in.deploy_was_stop+'; aws s3 cp '+_in.s3_access+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+'; '+_in.deploy_was_start+'","echo $?"] --output text > deploy_logs.txt\ncat deploy_logs.txt\n';
+    // }
     if(_in.jobs_upload_type === '01') {
-        jsonObj2['command'] = 'aws configure set region '+_in.aws_region+'\naws ssm send-command --document-name "AWS-RunShellScript" --comment "s3get" --instance-ids "'+_in.aws_instance+'" --parameters commands=["'+_in.deploy_was_stop+'; cp '+_in.upload_svr_path+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+'; '+_in.deploy_was_start+'","echo $?"] --output text > deploy_logs.txt\ncat deploy_logs.txt\n';
+        jsonObj2['command'] = 'ssh -p '+_in.upload_svr_port+' '+_in.upload_svr_host+' -o StrictHostKeyChecking=no "'+_in.deploy_was_stop+'; cp '+_in.upload_svr_path+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+'; '+_in.deploy_was_start+';"';
     } else if(_in.jobs_upload_type === '02') {
-        jsonObj2['command'] = 'aws configure set region '+_in.aws_region+'\naws ssm send-command --document-name "AWS-RunShellScript" --comment "s3get" --instance-ids "'+_in.aws_instance+'" --parameters commands=["'+_in.deploy_was_stop+'; aws s3 cp '+_in.s3_access+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+'; '+_in.deploy_was_start+'","echo $?"] --output text > deploy_logs.txt\ncat deploy_logs.txt\n';
+        jsonObj2['command'] = 'ssh -p '+_in.upload_svr_port+' '+_in.upload_svr_host+' -o StrictHostKeyChecking=no "'+_in.deploy_was_stop+'; aws s3 cp '+_in.s3_access+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+'; '+_in.deploy_was_start+';"';
     }
     jsonObj['run'] = jsonObj2;
 
