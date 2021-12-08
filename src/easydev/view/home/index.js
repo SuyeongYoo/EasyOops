@@ -32,10 +32,12 @@ import { makeStyles } from '@mui/styles';
 import React, {useCallback, useRef} from 'react';
 import Page from '../Page';
 import Start from "../pipeline"
+import CircleCIJobsBuild from "../pipeline/circleci/jobs_build"
 import CircleCIJobsUpload from "../pipeline/circleci/jobs_upload"
 import CircleCIJobsDeploy from "../pipeline/circleci/jobs_deploy"
 import CircleCIWorkflows from "../pipeline/circleci/workflows"
 import CircleCIResult from "../pipeline/circleci/result"
+import Finished from "../pipeline/circleci/finish"
 import {useDispatch, useSelector} from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
@@ -81,6 +83,7 @@ const Main = () => {
 
     const circleci = useSelector((state) => state.cricleci);
 
+    const jobsBuildRef = useRef(null);
     const jobsUploadRef = useRef(null);
     const jobsDeployRef = useRef(null);
     const worksRef = useRef(null);
@@ -91,13 +94,15 @@ const Main = () => {
         switch (step) {
             case 0:
                 return <Start />;
-            case 1:
-                return <CircleCIJobsUpload ref={jobsUploadRef} />;
-            case 2:
+            case 1: // Job(Deploy)
                 return <CircleCIJobsDeploy ref={jobsDeployRef} />;
-            case 3:
+            case 2: // Job(Upload)
+                return <CircleCIJobsUpload ref={jobsUploadRef} />;
+            case 3: // Job(Build)
+                return <CircleCIJobsBuild ref={jobsBuildRef} />;
+            case 4: // Workflow
                 return <CircleCIWorkflows ref={worksRef} />;
-            case 4:
+            case 5: // Guide
                 return <CircleCIResult />;
             default:
                 return;
@@ -105,13 +110,15 @@ const Main = () => {
     },[]);
 
     const handleNext = useCallback((step) => {
-        if(step === 0 || step === 4) {
+        if(step === 0 || step === 5) {
             dispatch({type:'CIRCLECI_STEP', step:(step+1)});
         } else if(step === 1) {
-            jobsUploadRef.current.handleSubmit();
-        } else if(step === 2) {
             jobsDeployRef.current.handleSubmit();
+        } else if(step === 2) {
+            jobsUploadRef.current.handleSubmit();
         } else if(step === 3) {
+            jobsBuildRef.current.handleSubmit();
+        } else if(step === 4) {
             worksRef.current.handleSubmit();
         }
     },[dispatch]);
@@ -120,22 +127,15 @@ const Main = () => {
         dispatch({type:'CIRCLECI_STEP', step: (step-1)});
     },[dispatch]);
 
-    const handleNew = () => {
-        alert('see you next time. ^^');
-    };
-
-    const handleHome = () => {
-        window.location.href = '/';
-    };
-
     const stepChange = (step) => {
-        if(step === 1 || step === 2) {
+
+        if(step === 1 || step === 2 || step === 3) {
             step = 1
-        } else if(step === 3) {
-            step = 2
         } else if(step === 4) {
-            step = 3
+            step = 2
         } else if(step === 5) {
+            step = 3
+        } else if(step === 6) {
             step = 4
         }
         return step;
@@ -149,7 +149,7 @@ const Main = () => {
                 <Container component="main" maxWidth="sm" sx={{ mb: 4 }} >
                     <Paper variant="outlined" sx={{ my: { xs: 3, md: 6 }, p: { xs: 2, md: 3 } }} className={classes.paper}>
                         <Typography component="h1" variant="h4" align="center" >
-                            Create an EasyOops CI/CD Pipeline
+                            EasyOops CI/CD Pipeline
                         </Typography>
                         <Stepper activeStep={stepChange(circleci.step)} sx={{ pt: 3, pb: 5 }}>
                             {steps.map((label) => (
@@ -160,34 +160,7 @@ const Main = () => {
                         </Stepper>
                         <React.Fragment>
                             {stepChange(circleci.step) === steps.length ? (
-                                <React.Fragment>
-                                    <Typography variant="h5" gutterBottom>
-                                        Thank you. How was it?
-                                    </Typography>
-                                    <Typography variant="subtitle1">
-                                        Do you need a new experience for auto-configuration?
-                                    </Typography>
-                                    <Typography variant="subtitle1">
-                                        ● Automatic GIT connection configuration.
-                                    </Typography>
-                                    <Typography variant="subtitle1">
-                                        ● Automatic deploy connection configuration.
-                                    </Typography>
-                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                        <Button variant="contained"
-                                                sx={{ mt: 3, ml: 1 }}
-                                                onClick={handleHome}
-                                        >
-                                            Try Again
-                                        </Button>
-                                        <Button variant="contained"
-                                                sx={{ mt: 3, ml: 1 }}
-                                                onClick={handleNew}
-                                        >
-                                            New Oops
-                                        </Button>
-                                    </Box>
-                                </React.Fragment>
+                                <Finished />
                             ) : (
                                 <React.Fragment>
                                     {getStepContent(circleci.step)}
@@ -203,7 +176,7 @@ const Main = () => {
                                             onClick={() => handleNext(circleci.step)}
                                             sx={{ mt: 3, ml: 1 }}
                                         >
-                                            {circleci.step === steps.length - 1 ? 'Finish' : 'Next'}
+                                            {'Next'}
                                         </Button>
                                     </Box>
                                 </React.Fragment>

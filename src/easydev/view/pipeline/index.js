@@ -26,7 +26,7 @@
  * description  : devops ci/cd pipeline select
  **/
 import {
-    Grid, Typography, ToggleButtonGroup, ToggleButton
+    Grid, Typography, ToggleButtonGroup, ToggleButton, Button
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React from 'react';
@@ -38,6 +38,10 @@ const useStyles = makeStyles((theme) => ({
     root: {
     }
 }));
+
+const handleLink = (_url) => {
+    window.open(_url);
+};
 
 const Start = () => {
     const classes = useStyles();
@@ -63,13 +67,21 @@ const Start = () => {
     const handleChange = useCallback((e, v) => {
         let payload = {}
         if (!_isEmpty(v)) {
-            payload['tool_type'] = v;
-            dispatch({
-                type:'CIRCLECI_GET_INFO',
-                payload: payload
-            });
+            if(v === '01') {
+                payload['tool_type'] = v;
+                dispatch({
+                    type:'CIRCLECI_GET_INFO',
+                    payload: payload
+                });
+            } else if(v === '02') {
+                handleReady();
+            }
         }
     },[dispatch]);
+
+    const handleReady = () => {
+        alert('Sorry, It is working.');
+    };
 
     return (
         <React.Fragment>
@@ -99,10 +111,10 @@ const Start = () => {
                 <Grid item xs={12} md={4}></Grid>
                 <Grid item xs={12}>
                     <Typography variant="caption" display="block" gutterBottom>
-                        ● CircleCI - There is a cost to use the service. It provides easy UI/UX.
+                        ● CircleCI - There is a cost to use the service. It provides easy UI/UX. <Button onClick={() => handleLink('https://circleci.com/')} >[Go CircleCI]</Button>
                     </Typography>
                     <Typography variant="caption" display="block" gutterBottom>
-                        ● Jenkins - You need a server to use it. Jenkins must be installed on the server. Expansion is advantageous.
+                        ● Jenkins - You need a server to use it. Jenkins must be installed on the server. Expansion is advantageous. <Button onClick={() => handleLink('https://www.jenkins.io/')} >[Go Jenkins]</Button>
                     </Typography>
                 </Grid>
             </Grid>

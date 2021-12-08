@@ -23,11 +23,14 @@
  *
  * date         : 2021.09.01
  * creater      : EasyOops
- * description  : devops ci/cd pipeline jobs define
+ * description  : devops ci/cd pipeline jobs define (deploy)
  **/
 import {
-    Grid, Typography
+    Button, Grid, Typography, Chip
 } from '@mui/material';
+import {
+    Check
+} from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
 import React, {useCallback, useEffect, forwardRef, useImperativeHandle, useRef} from 'react';
 import {useDispatch, useSelector} from "react-redux";
@@ -42,6 +45,10 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
+const handleSample = () => {
+    window.open('https://circleci.com/docs/2.0/contexts/');
+};
+
 const Jobs = forwardRef((props, ref)  => {
     const classes = useStyles();
     const dispatch = useDispatch();
@@ -54,18 +61,27 @@ const Jobs = forwardRef((props, ref)  => {
     const handleInit = useCallback(() => {
         let payload = {};
 
-        if (!circleci.info.hasOwnProperty('deploy_svr_host')
-            || !circleci.info.hasOwnProperty('deploy_svr_port')
-            || !circleci.info.hasOwnProperty('deploy_svr_path')
-            || !circleci.info.hasOwnProperty('deploy_was_start')
-            || !circleci.info.hasOwnProperty('deploy_was_stop')) {
+        if (!circleci.info.hasOwnProperty('deploy_ssh_host')
+            || !circleci.info.hasOwnProperty('deploy_ssh_port')
+            || !circleci.info.hasOwnProperty('deploy_ssh_path')
+            || !circleci.info.hasOwnProperty('deploy_ssh_account')
+            || !circleci.info.hasOwnProperty('deploy_aws_access')
+            || !circleci.info.hasOwnProperty('deploy_aws_secret')
+            || !circleci.info.hasOwnProperty('deploy_aws_region')
+            || !circleci.info.hasOwnProperty('deploy_aws_cd_name')
+            || !circleci.info.hasOwnProperty('deploy_aws_cd_group')
+        ) {
             payload = circleci.info;
             payload['jobs_deploy_type'] = '01';
-            payload['deploy_svr_host'] = '';
-            payload['deploy_svr_port'] = '';
-            payload['deploy_svr_path'] = '';
-            payload['deploy_was_start'] = '';
-            payload['deploy_was_stop'] = '';
+            payload['deploy_ssh_host'] = '';
+            payload['deploy_ssh_port'] = '';
+            payload['deploy_ssh_path'] = '';
+            payload['deploy_ssh_account'] = '';
+            payload['deploy_aws_access'] = '';
+            payload['deploy_aws_secret'] = '';
+            payload['deploy_aws_region'] = '';
+            payload['deploy_aws_cd_name'] = '';
+            payload['deploy_aws_cd_group'] = '';
             dispatch({
                 type:'CIRCLECI_GET_INFO',
                 payload: payload
@@ -81,11 +97,16 @@ const Jobs = forwardRef((props, ref)  => {
         let payload = {}
         payload = circleci.info;
         payload['jobs_deploy_type'] = v.jobs_deploy_type;
-        payload['deploy_svr_host'] = v.deploy_svr_host;
-        payload['deploy_svr_port'] = v.deploy_svr_port;
-        payload['deploy_svr_path'] = v.deploy_svr_path;
-        payload['deploy_was_start'] = v.deploy_was_start;
-        payload['deploy_was_stop'] = v.deploy_was_stop;
+        payload['deploy_ssh_host'] = v.deploy_ssh_host;
+        payload['deploy_ssh_port'] = v.deploy_ssh_port;
+        payload['deploy_ssh_path'] = v.deploy_ssh_path;
+        payload['deploy_ssh_account'] = v.deploy_ssh_account;
+        payload['deploy_aws_access'] = v.deploy_aws_access;
+        payload['deploy_aws_secret'] = v.deploy_aws_secret;
+        payload['deploy_aws_region'] = v.deploy_aws_region;
+        payload['deploy_aws_cd_name'] = v.deploy_aws_cd_name;
+        payload['deploy_aws_cd_group'] = v.deploy_aws_cd_group;
+
         dispatch({
             type:'CIRCLECI_GET_INFO',
             payload: payload
@@ -100,123 +121,135 @@ const Jobs = forwardRef((props, ref)  => {
             layer = <React.Fragment>
                         <Grid item xs={8}>
                             <FormText
-                                id={"deploy_svr_host"}
+                                id={"deploy_ssh_host"}
                                 label={"SSH(HOST)"}
                                 placeholder={"user@192.168.1.100"}
-                                value={_val.deploy_svr_host}
-                                touched={_touched.deploy_svr_host}
-                                errors={_errors.deploy_svr_host}
+                                value={_val.deploy_ssh_host}
+                                touched={_touched.deploy_ssh_host}
+                                errors={_errors.deploy_ssh_host}
                                 onBlur={_onBlur}
                                 onChange={_onChange}
                             />
                         </Grid>
                         <Grid item xs={4}>
                             <FormText
-                                id={"deploy_svr_port"}
+                                id={"deploy_ssh_port"}
                                 label={"SSH(PORT)"}
                                 placeholder={"21"}
-                                value={_val.deploy_svr_port}
-                                touched={_touched.deploy_svr_port}
-                                errors={_errors.deploy_svr_port}
+                                value={_val.deploy_ssh_port}
+                                touched={_touched.deploy_ssh_port}
+                                errors={_errors.deploy_ssh_port}
                                 onBlur={_onBlur}
                                 onChange={_onChange}
                             />
                         </Grid>
-                        <Grid item xs={12}>
+                        <Grid item xs={8}>
                             <FormText
-                                id={"deploy_svr_path"}
-                                label={"SERVER(Deploy Path)"}
-                                placeholder={"/home/was/"}
-                                value={_val.deploy_svr_path}
-                                touched={_touched.deploy_svr_path}
-                                errors={_errors.deploy_svr_path}
+                                id={"deploy_ssh_path"}
+                                label={"Path(Deploy)"}
+                                placeholder={"/home/tomcat/project"}
+                                value={_val.deploy_ssh_path}
+                                touched={_touched.deploy_ssh_path}
+                                errors={_errors.deploy_ssh_path}
                                 onBlur={_onBlur}
                                 onChange={_onChange}
                             />
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid item xs={4}>
                             <FormText
-                                id={"deploy_was_start"}
-                                label={"WAS(START)"}
-                                placeholder={"./service_start.sh"}
-                                value={_val.deploy_was_start}
-                                touched={_touched.deploy_was_start}
-                                errors={_errors.deploy_was_start}
+                                id={"deploy_ssh_account"}
+                                label={"Account(Deploy)"}
+                                placeholder={"root"}
+                                value={_val.deploy_ssh_account}
+                                touched={_touched.deploy_ssh_account}
+                                errors={_errors.deploy_ssh_account}
                                 onBlur={_onBlur}
                                 onChange={_onChange}
                             />
                         </Grid>
-                        <Grid item xs={6}>
-                            <FormText
-                                id={"deploy_was_stop"}
-                                label={"WAS(STOP)"}
-                                placeholder={"./service_stop.sh"}
-                                value={_val.deploy_was_stop}
-                                touched={_touched.deploy_was_stop}
-                                errors={_errors.deploy_was_stop}
-                                onBlur={_onBlur}
-                                onChange={_onChange}
-                            />
-                        </Grid>
-                    </React.Fragment>
+            </React.Fragment>
         } else if(_val.jobs_deploy_type === '02') {
             layer = <React.Fragment>
-                <Grid item xs={8}>
+                <Grid item xs={4}>
                     <FormText
-                        id={"deploy_svr_host"}
-                        label={"SSH(HOST)"}
-                        placeholder={"user@192.168.1.100"}
-                        value={_val.deploy_svr_host}
-                        touched={_touched.deploy_svr_host}
-                        errors={_errors.deploy_svr_host}
+                        id={"deploy_aws_access"}
+                        label={"AWS(ACCESS)"}
+                        placeholder={"TEST7AAAAAAA23B4F"}
+                        value={_val.deploy_aws_access}
+                        touched={_touched.deploy_aws_access}
+                        errors={_errors.deploy_aws_access}
                         onBlur={_onBlur}
                         onChange={_onChange}
                     />
                 </Grid>
                 <Grid item xs={4}>
                     <FormText
-                        id={"deploy_svr_port"}
-                        label={"SSH(PORT)"}
-                        placeholder={"21"}
-                        value={_val.deploy_svr_port}
-                        touched={_touched.deploy_svr_port}
-                        errors={_errors.deploy_svr_port}
+                        id={"deploy_aws_secret"}
+                        label={"AWS(SECRET)"}
+                        placeholder={"TEST7AAAAAAA23B4FTEST7AAAAAAA23B4F"}
+                        value={_val.deploy_aws_secret}
+                        touched={_touched.deploy_aws_secret}
+                        errors={_errors.deploy_aws_secret}
                         onBlur={_onBlur}
                         onChange={_onChange}
                     />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={4}>
                     <FormText
-                        id={"deploy_svr_path"}
-                        label={"SERVER(Deploy Path)"}
-                        placeholder={"/home/was/"}
-                        value={_val.deploy_svr_path}
-                        touched={_touched.deploy_svr_path}
-                        errors={_errors.deploy_svr_path}
-                        onBlur={_onBlur}
-                        onChange={_onChange}
-                    />
-                </Grid>
-                <Grid item xs={6}>
-                    <FormText
-                        id={"deploy_was_start"}
-                        label={"WAS(START)"}
-                        placeholder={"./service_start.sh"}
-                        value={_val.deploy_was_start}
-                        touched={_touched.deploy_was_start}
-                        errors={_errors.deploy_was_start}
+                        id={"deploy_aws_region"}
+                        label={"AWS(REGION)"}
+                        placeholder={"ap-northeast-2"}
+                        value={_val.deploy_aws_region}
+                        touched={_touched.deploy_aws_region}
+                        errors={_errors.deploy_aws_region}
                         onBlur={_onBlur}
                         onChange={_onChange}
                     />
                 </Grid>
                 <Grid item xs={6}>
                     <FormText
-                        id={"deploy_was_stop"}
-                        label={"WAS(STOP)"}
-                        placeholder={"./service_stop.sh"}
-                        value={_val.deploy_was_stop}
-                        touched={_touched.deploy_was_stop}
-                        errors={_errors.deploy_was_stop}
+                        id={"deploy_aws_cd_name"}
+                        label={"CodeDeploy(NAME)"}
+                        placeholder={"prd-project"}
+                        value={_val.deploy_aws_cd_name}
+                        touched={_touched.deploy_aws_cd_name}
+                        errors={_errors.deploy_aws_cd_name}
+                        onBlur={_onBlur}
+                        onChange={_onChange}
+                    />
+                </Grid>
+                <Grid item xs={6}>
+                    <FormText
+                        id={"deploy_aws_cd_group"}
+                        label={"CodeDeploy(GROUP)"}
+                        placeholder={"prd-project-group"}
+                        value={_val.deploy_aws_cd_group}
+                        touched={_touched.deploy_aws_cd_group}
+                        errors={_errors.deploy_aws_cd_group}
+                        onBlur={_onBlur}
+                        onChange={_onChange}
+                    />
+                </Grid>
+                <Grid item xs={8}>
+                    <FormText
+                        id={"deploy_ssh_path"}
+                        label={"Path(Deploy)"}
+                        placeholder={"/home/tomcat/project"}
+                        value={_val.deploy_ssh_path}
+                        touched={_touched.deploy_ssh_path}
+                        errors={_errors.deploy_ssh_path}
+                        onBlur={_onBlur}
+                        onChange={_onChange}
+                    />
+                </Grid>
+                <Grid item xs={4}>
+                    <FormText
+                        id={"deploy_ssh_account"}
+                        label={"Account(Deploy)"}
+                        placeholder={"root"}
+                        value={_val.deploy_ssh_account}
+                        touched={_touched.deploy_ssh_account}
+                        errors={_errors.deploy_ssh_account}
                         onBlur={_onBlur}
                         onChange={_onChange}
                     />
@@ -235,13 +268,17 @@ const Jobs = forwardRef((props, ref)  => {
                 initialValues={{
                     /* deploy */
                     jobs_deploy_type: _isEmpty(circleci.info.jobs_deploy_type) ? '01' : circleci.info.jobs_deploy_type,
-                    aws_region: _isEmpty(circleci.info.aws_region) ? '' : circleci.info.aws_region,
-                    aws_instance: _isEmpty(circleci.info.aws_instance) ? '' : circleci.info.aws_instance,
-                    deploy_svr_host: _isEmpty(circleci.info.deploy_svr_host) ? '' : circleci.info.deploy_svr_host,
-                    deploy_svr_port: _isEmpty(circleci.info.deploy_svr_port) ? '' : circleci.info.deploy_svr_port,
-                    deploy_svr_path: _isEmpty(circleci.info.deploy_svr_path) ? '' : circleci.info.deploy_svr_path,
-                    deploy_was_start: _isEmpty(circleci.info.deploy_was_start) ? '' : circleci.info.deploy_was_start,
-                    deploy_was_stop: _isEmpty(circleci.info.deploy_was_stop) ? '' : circleci.info.deploy_was_stop
+
+                    deploy_ssh_host: _isEmpty(circleci.info.deploy_ssh_host) ? '' : circleci.info.deploy_ssh_host,
+                    deploy_ssh_port: _isEmpty(circleci.info.deploy_ssh_port) ? '' : circleci.info.deploy_ssh_port,
+                    deploy_ssh_path: _isEmpty(circleci.info.deploy_ssh_path) ? '' : circleci.info.deploy_ssh_path,
+                    deploy_ssh_account: _isEmpty(circleci.info.deploy_ssh_account) ? '' : circleci.info.deploy_ssh_account,
+
+                    deploy_aws_access: _isEmpty(circleci.info.deploy_aws_access) ? '' : circleci.info.deploy_aws_access,
+                    deploy_aws_secret: _isEmpty(circleci.info.deploy_aws_secret) ? '' : circleci.info.deploy_aws_secret,
+                    deploy_aws_region: _isEmpty(circleci.info.deploy_aws_region) ? '' : circleci.info.deploy_aws_region,
+                    deploy_aws_cd_name: _isEmpty(circleci.info.deploy_aws_cd_name) ? '' : circleci.info.deploy_aws_cd_name,
+                    deploy_aws_cd_group: _isEmpty(circleci.info.deploy_aws_cd_group) ? '' : circleci.info.deploy_aws_cd_group
                 }}
                 validationSchema={Yup.object().shape({
                     //s3_access: Yup.string().required('Please enter your s3 access information to upload.'),
@@ -249,13 +286,24 @@ const Jobs = forwardRef((props, ref)  => {
                     //aws_instance: Yup.string().required('Please enter your aws instance information to deploy.')
                 })}
                 onSubmit={(v) => {
+
+                    // CircleCI Env Setting
+                    v.deploy_ssh_host = _isEmpty(v.deploy_ssh_host) ? '$DEPLOY_SSH_HOST' : v.deploy_ssh_host;
+                    v.deploy_ssh_port = _isEmpty(v.deploy_ssh_port) ? '$DEPLOY_SSH_PORT' : v.deploy_ssh_port;
+
+                    v.deploy_aws_access = _isEmpty(v.deploy_aws_access) ? '$AWS_ACCESS_KEY' : v.deploy_aws_access;
+                    v.deploy_aws_secret = _isEmpty(v.deploy_aws_secret) ? '$AWS_SECRET_KEY' : v.deploy_aws_secret;
+                    v.deploy_aws_region = _isEmpty(v.deploy_aws_region) ? '$AWS_REGION' : v.deploy_aws_region;
+                    v.deploy_aws_cd_name = _isEmpty(v.deploy_aws_cd_name) ? '$APPLICATION_NAME' : v.deploy_aws_cd_name;
+                    v.deploy_aws_cd_group = _isEmpty(v.deploy_aws_cd_group) ? '$APPLICATION_GROUP' : v.deploy_aws_cd_group;
+
                     handleNext(v);
                 }}
             >
                 {({ errors, handleBlur, handleChange, handleSubmit, touched, values }) => (
                     <form onSubmit={handleSubmit}>
                         <Typography variant="h4" gutterBottom spacing={2}>
-                            Please enter some information to define the job.
+                            Let's set up deploy first.
                         </Typography>
                         <Grid container
                               className={classes.root}
@@ -266,13 +314,13 @@ const Jobs = forwardRef((props, ref)  => {
                         >
                             <Grid item xs={12}>
                                 <Typography variant="h4" color={"darkblue"} spacing={1}>
-                                    [STEP2] Deploy
+                                    <Chip icon={<Check />} label="DEPLOY" />
                                 </Typography>
                             </Grid>
                             <Grid item xs={12}>
                                 <FormOption
                                     id={"jobs_deploy_type"}
-                                    item={[{"value":"01", "label":"SERVER"},{"value":"02", "label":"AWS(EC2)"}]}
+                                    item={[{"value":"01", "label":"SSH"},{"value":"02", "label":"CodeDeploy(AWS)"}]}
                                     value={values.jobs_deploy_type}
                                     touched={touched.jobs_deploy_type}
                                     errors={errors.jobs_deploy_type}
@@ -283,10 +331,10 @@ const Jobs = forwardRef((props, ref)  => {
                             {handleChangeDeploy(values, touched, errors, handleBlur, handleChange)}
                             <Grid item xs={12}>
                                 <Typography variant="caption" display="block" gutterBottom>
-                                    ● Jobs - To create a pipeline, each configuration definition is required for build, test, upload, and deploy.
+                                    ● For important information, it is recommended to set the environment variable of CircleCI. (If there is no input, an arbitrary environment variable name is set.)
                                 </Typography>
                                 <Typography variant="caption" display="block" gutterBottom>
-                                    ● If you feel the disclosure of information is risky, write a random value only known to you in the text area. And edit the file later.
+                                    ● SETTINGS >> Contexts >> Create Context <Button onClick={handleSample} >[SAMPLE]</Button>
                                 </Typography>
                             </Grid>
                         </Grid>

@@ -78,6 +78,7 @@ const FormOption = (props) => {
                         control={<Radio color="primary" />}
                         label={v.label}
                         labelPlacement="end"
+                        disabled={v.disabled}
                     />
                 )}
             </RadioGroup>

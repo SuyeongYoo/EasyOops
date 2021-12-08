@@ -30,9 +30,9 @@ export const defaults_main = () => {
 
     let jsonJobs = {};
 
-    jsonJobs['docker'] = defaults_docker('easyoops/easy_oops:0.1');
+    jsonJobs['docker'] = defaults_docker('easyooops/easy_oops:0.1');
     jsonJobs['environment'] = defaults_environment();
-    jsonJobs['working_directory'] = '~/easy-oops';
+    jsonJobs['working_directory'] = '~/projects';
     jsonJobs['resource_class'] = 'large';
 
     return jsonJobs;

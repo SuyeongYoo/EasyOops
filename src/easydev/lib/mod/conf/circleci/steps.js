@@ -75,8 +75,12 @@ export const steps_attach_workspace = () => {
     return jsonObj;
 };
 
-/* steps >> run_maven_off */
-export const steps_run_maven_off = () => {
+/*******************************************************
+ * BUILD
+ ********************************************************/
+/** Maven **/
+/* steps >> run_maven_off_build */
+export const steps_run_maven_off_build = () => {
 
     let jsonObj = {};
 
@@ -86,7 +90,7 @@ export const steps_run_maven_off = () => {
 };
 
 /* steps >> run_maven_clean */
-export const steps_run_maven_clean = () => {
+export const steps_run_maven_clean_build = () => {
 
     let jsonObj = {};
 
@@ -95,6 +99,56 @@ export const steps_run_maven_clean = () => {
     return jsonObj;
 };
 
+/** Ant **/
+/* steps >> run_ant_clean_build */
+export const steps_run_ant_clean_build = () => {
+
+    let jsonObj = {};
+
+    jsonObj['run'] = 'ant -buildfile build.xml clean-all';
+
+    return jsonObj;
+};
+
+/* steps >> run_ant_compile_build */
+export const steps_run_ant_compile_build = () => {
+
+    let jsonObj = {};
+
+    jsonObj['run'] = 'ant -buildfile build.xml dist';
+
+    return jsonObj;
+};
+
+/* steps >> run_ant_remove_build */
+export const steps_run_ant_remove_build = (_in) => {
+
+    let jsonObj = {};
+    let jsonObj2 = {};
+
+    jsonObj2['name'] = 'remove tar';
+    jsonObj2['command'] = 'rm -rf '+_in.upload_file_name;
+    jsonObj['run'] = jsonObj2;
+
+    return jsonObj;
+};
+
+/* steps >> run_ant_make_build */
+export const steps_run_ant_make_build = (_in) => {
+
+    let jsonObj = {};
+    let jsonObj2 = {};
+
+    jsonObj2['name'] = 'make tar';
+    jsonObj2['command'] = 'tar -zcvf '+_in.upload_file_name+' scripts/*.sh ./appspec.yml dist/ROOT.war';
+    jsonObj['run'] = jsonObj2;
+
+    return jsonObj;
+};
+
+/*******************************************************
+* TEST
+********************************************************/
 /* steps >> run_integration_test */
 export const steps_run_integration_test = () => {
 
@@ -108,6 +162,9 @@ export const steps_run_integration_test = () => {
     return jsonObj;
 };
 
+/*******************************************************
+ * UPLOAD
+ ********************************************************/
 /* steps >> ssh_upload */
 export const steps_ssh_upload = (_in) => {
 
@@ -115,7 +172,8 @@ export const steps_ssh_upload = (_in) => {
     let jsonObj2 = {};
 
     jsonObj2['name'] = 'Upload to SSH';
-    jsonObj2['command'] = 'scp -q -r -o StrictHostKeyChecking=no target/*.jar'+_in.upload_svr_host+':'+_in.upload_svr_path;
+    jsonObj2['no_output_timeout'] = '30m';
+    jsonObj2['command'] = 'scp -q -r -o StrictHostKeyChecking=no '+_in.upload_file_name+' '+_in.upload_ssh_host+':'+_in.upload_ssh_path;
     jsonObj['run'] = jsonObj2;
 
     return jsonObj;
@@ -127,14 +185,17 @@ export const steps_s3_upload = (_in) => {
     let jsonObj = {};
     let jsonObj2 = {};
 
-    jsonObj2['name'] = 'Upload to S3';
-    //jsonObj2['command'] = 'aws s3 cp target/*.jar s3://st-gk-deploy/eu-central-1/CircleCI/';
-    jsonObj2['command'] = 'aws s3 cp target/*.jar '+_in.s3_access;
+    jsonObj2['name'] = 'Upload to S3(AWS)';
+    jsonObj2['no_output_timeout'] = '30m';
+    jsonObj2['command'] = 'aws s3 cp '+_in.upload_file_name+' s3://'+_in.upload_s3_location+'/'+_in.upload_s3_name+'/';
     jsonObj['run'] = jsonObj2;
 
     return jsonObj;
 };
 
+/*******************************************************
+ * DEPLOY
+ ********************************************************/
 /* steps >> ssh_deploy */
 export const steps_ssh_deploy = (_in) => {
 
@@ -142,57 +203,49 @@ export const steps_ssh_deploy = (_in) => {
     let jsonObj2 = {};
 
     jsonObj2['name'] = 'Deploy to SSH';
+    jsonObj2['no_output_timeout'] = '30m';
     if(_in.jobs_upload_type === '01') {
-        jsonObj2['command'] = 'ssh -p '+_in.upload_svr_port+' '+_in.upload_svr_host+' -o StrictHostKeyChecking=no "'+_in.deploy_was_stop+'; cp '+_in.upload_svr_path+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+'; '+_in.deploy_was_start+';"';
+        jsonObj2['command'] = 'ssh -p '+_in.upload_ssh_port+' '+_in.upload_ssh_host+' -o StrictHostKeyChecking=no "cp '+_in.upload_ssh_path+'/'+_in.upload_file_name+' '+_in.deploy_ssh_path+'; '+_in.deploy_was_stop+'; '+_in.deploy_was_start+';"';
     } else if(_in.jobs_upload_type === '02') {
-        jsonObj2['command'] = 'ssh -p '+_in.upload_svr_port+' '+_in.upload_svr_host+' -o StrictHostKeyChecking=no "'+_in.deploy_was_stop+'; aws s3 cp '+_in.s3_access+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+'; '+_in.deploy_was_start+';"';
+        jsonObj2['command'] = 'ssh -p '+_in.upload_ssh_port+' '+_in.upload_ssh_host+' -o StrictHostKeyChecking=no "aws s3 cp '+_in.upload_file_name+' s3://'+_in.upload_s3_location+'/'+_in.upload_s3_name+'/; '+_in.deploy_was_stop+'; '+_in.deploy_was_start+';"';
     }
     jsonObj['run'] = jsonObj2;
 
     return jsonObj;
 };
 
-/* steps >> ec2_deploy */
-export const steps_ec2_deploy = (_in) => {
+/* steps >> aws_auth_deploy */
+export const steps_aws_auth_deploy = (_in) => {
 
     let jsonObj = {};
     let jsonObj2 = {};
 
-    jsonObj2['name'] = 'Deploy to AWS(EC2)';
-    //jsonObj2['command'] = 'aws configure set region eu-central-1\naws ssm send-command --document-name "AWS-RunShellScript" --comment "s3get" --instance-ids "i-032445019bed09dfb" --parameters commands=["aws s3 cp s3://st-gk-deploy/eu-central-1/CircleCI/circleci-0.0.1-SNAPSHOT.jar /home/jinkyu.id/","echo $?"] --output text > deploy_logs.txt\ncat deploy_logs.txt\n';
-    // if(_in.jobs_upload_type === '01') {
-    //     jsonObj2['command'] = 'aws configure set region '+_in.aws_region+'\naws ssm send-command --document-name "AWS-RunShellScript" --comment "s3get" --instance-ids "'+_in.aws_instance+'" --parameters commands=["'+_in.deploy_was_stop+'; cp '+_in.upload_svr_path+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+'; '+_in.deploy_was_start+'","echo $?"] --output text > deploy_logs.txt\ncat deploy_logs.txt\n';
-    // } else if(_in.jobs_upload_type === '02') {
-    //     jsonObj2['command'] = 'aws configure set region '+_in.aws_region+'\naws ssm send-command --document-name "AWS-RunShellScript" --comment "s3get" --instance-ids "'+_in.aws_instance+'" --parameters commands=["'+_in.deploy_was_stop+'; aws s3 cp '+_in.s3_access+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+'; '+_in.deploy_was_start+'","echo $?"] --output text > deploy_logs.txt\ncat deploy_logs.txt\n';
-    // }
-    if(_in.jobs_upload_type === '01') {
-        jsonObj2['command'] = 'ssh -p '+_in.upload_svr_port+' '+_in.upload_svr_host+' -o StrictHostKeyChecking=no "'+_in.deploy_was_stop+'; cp '+_in.upload_svr_path+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+'; '+_in.deploy_was_start+';"';
-    } else if(_in.jobs_upload_type === '02') {
-        jsonObj2['command'] = 'ssh -p '+_in.upload_svr_port+' '+_in.upload_svr_host+' -o StrictHostKeyChecking=no "'+_in.deploy_was_stop+'; aws s3 cp '+_in.s3_access+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+'; '+_in.deploy_was_start+';"';
-    }
+    jsonObj2['name'] = 'Aws Account Set';
+    jsonObj2['command'] = 'aws configure set aws_access_key_id '+_in.deploy_aws_access+'\naws configure set aws_secret_access_key  '+_in.deploy_aws_secret+'\naws configure set default.region '+_in.deploy_aws_region;
+
     jsonObj['run'] = jsonObj2;
 
     return jsonObj;
 };
 
-/* steps >> code_deploy */
-export const steps_code_deploy = (_in) => {
+/* steps >> aws_cd_deploy */
+export const steps_aws_cd_deploy = (_in) => {
 
     let jsonObj = {};
     let jsonObj2 = {};
 
-    jsonObj2['name'] = 'Deploy to AWS(CodeDeploy)';
+    jsonObj2['name'] = 'Deploy to CodeDeploy(AWS)';
+    jsonObj2['no_output_timeout'] = '30m';
+    jsonObj2['command'] = 'aws deploy create-deployment --application-name '+_in.deploy_aws_cd_name+' --deployment-group-name '+_in.deploy_aws_cd_group+' --s3-location bucket='+_in.upload_s3_name+',key='+_in.upload_s3_location+'/'+_in.upload_file_name+',bundleType=tgz > deploy_logs.txt';
 
-    if(_in.jobs_upload_type === '01') {
-        jsonObj2['command'] = 'aws configure set region '+_in.aws_region+'\naws ssm send-command --document-name "AWS-RunShellScript" --comment "s3get" --instance-ids "'+_in.aws_instance+'" --parameters commands=["'+_in.deploy_was_stop+' && cp '+_in.upload_svr_path+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+' && '+_in.deploy_was_start+'","echo $?"] --output text > deploy_logs.txt\ncat deploy_logs.txt\n';
-    } else if(_in.jobs_upload_type === '02') {
-        jsonObj2['command'] = 'aws configure set region '+_in.aws_region+'\naws ssm send-command --document-name "AWS-RunShellScript" --comment "s3get" --instance-ids "'+_in.aws_instance+'" --parameters commands=["'+_in.deploy_was_stop+' && aws s3 cp '+_in.s3_access+'/circleci-0.0.1-SNAPSHOT.jar '+_in.deploy_svr_path+' && '+_in.deploy_was_start+'","echo $?"] --output text > deploy_logs.txt\ncat deploy_logs.txt\n';
-    }
     jsonObj['run'] = jsonObj2;
 
     return jsonObj;
 };
 
+/*******************************************************
+ * STORE
+ ********************************************************/
 /* steps >> store_test_results */
 export const steps_store_test_results = () => {
 

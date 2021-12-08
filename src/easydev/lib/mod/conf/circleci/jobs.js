@@ -30,17 +30,19 @@ import {
     steps_restore_cache,
     steps_save_cache,
     steps_attach_workspace,
-    steps_run_maven_off,
-    steps_run_maven_clean,
     steps_run_integration_test,
     steps_ssh_upload,
     steps_s3_upload,
     steps_ssh_deploy,
-    steps_ec2_deploy,
-    steps_code_deploy,
     steps_store_test_results,
     steps_store_artifacts,
-    steps_persist_to_workspace
+    steps_persist_to_workspace,
+    steps_run_maven_clean_build,
+    steps_run_maven_off_build,
+    steps_run_ant_clean_build,
+    steps_run_ant_compile_build,
+    steps_run_ant_remove_build,
+    steps_run_ant_make_build, steps_aws_auth_deploy, steps_aws_cd_deploy
 } from "./steps";
 import {
     defaults_main
@@ -65,17 +67,23 @@ export const jobs_build = (_in) => {
     let jsonObj = {};
     let jsonArr = [];
 
-    if(_in.jobs_mvn_used === '01') {
+    if(_in.jobs_build_type === '01') {        // Ant
+        jsonArr.push(steps_checkout());      // Maven
+        jsonArr.push(steps_run_ant_clean_build());
+        jsonArr.push(steps_run_ant_compile_build());
+        jsonArr.push(steps_run_ant_remove_build(_in));
+        jsonArr.push(steps_run_ant_make_build(_in));
+        jsonArr.push(steps_store_artifacts('dist/ROOT.war'));
+        jsonArr.push(steps_store_artifacts('./appspec.yml'));
+        jsonArr.push(steps_store_artifacts('scripts/'));
+        jsonArr.push(steps_persist_to_workspace());
+    } else if(_in.jobs_build_type === '02') {
         jsonArr.push(steps_checkout());
         jsonArr.push(steps_restore_cache());
-        jsonArr.push(steps_run_maven_off());
+        jsonArr.push(steps_run_maven_off_build());
         jsonArr.push(steps_save_cache());
-        jsonArr.push(steps_run_maven_clean());
-        jsonArr.push(steps_store_artifacts('target/circleci-0.0.1-SNAPSHOT.jar'));
-        jsonArr.push(steps_persist_to_workspace());
-    } else if(_in.jobs_mvn_used === '02') {
-        jsonArr.push(steps_checkout());
-        jsonArr.push(steps_store_artifacts('target/circleci-0.0.1-SNAPSHOT.jar'));
+        jsonArr.push(steps_run_maven_clean_build());
+        jsonArr.push(steps_store_artifacts(_in.upload_file_name));
         jsonArr.push(steps_persist_to_workspace());
     }
 
@@ -91,14 +99,14 @@ export const jobs_test = (_in) => {
     let jsonObj = {};
     let jsonArr = [];
 
-    if(_in.jobs_mvn_used === '01') {
+    if(_in.jobs_build_type === '01') {
         jsonArr.push(steps_checkout());
-        jsonArr.push(steps_restore_cache());
         jsonArr.push(steps_attach_workspace());
         jsonArr.push(steps_run_integration_test());
         jsonArr.push(steps_store_test_results());
-    } else if(_in.jobs_mvn_used === '02') {
+    } else if(_in.jobs_build_type === '02') {
         jsonArr.push(steps_checkout());
+        jsonArr.push(steps_restore_cache());
         jsonArr.push(steps_attach_workspace());
         jsonArr.push(steps_run_integration_test());
         jsonArr.push(steps_store_test_results());
@@ -133,14 +141,20 @@ export const jobs_deploy = (_in) => {
 
     let jsonObj = {};
     let jsonArr = [];
+    let sh_path = 'scripts/'
+
+    _in.deploy_was_stop = sh_path + 'stop.sh';
+    _in.deploy_was_start = sh_path + 'start.sh';
 
     jsonArr.push(steps_attach_workspace());
     if(_in.jobs_deploy_type === '01') {
+        if(_in.jobs_upload_type === '02') {
+            jsonArr.push(steps_aws_auth_deploy(_in));
+        }
         jsonArr.push(steps_ssh_deploy(_in));
     } else if(_in.jobs_deploy_type === '02') {
-        jsonArr.push(steps_ec2_deploy(_in));
-    } else if(_in.jobs_deploy_type === '02') {
-        jsonArr.push(steps_code_deploy(_in));
+        jsonArr.push(steps_aws_auth_deploy(_in));
+        jsonArr.push(steps_aws_cd_deploy(_in));
     }
     jsonArr.push(steps_store_artifacts('deploy_logs.txt'));
 

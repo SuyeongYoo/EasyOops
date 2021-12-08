@@ -32,7 +32,8 @@ import {
     CIRCLECI_GET,
     CIRCLECI_GET_INFO,
     CIRCLECI_UPD,
-    CIRCLECI_STEP
+    CIRCLECI_STEP,
+    CIRCLECI_CONFIG
 } from "../types";
 import { _isEmpty } from "./../../common";
 
@@ -41,6 +42,7 @@ const initialState = {
     rows:[],
     info:{},
     step: 0,
+    config: "1",
     isEdit: false
 };
 // store status
@@ -75,10 +77,15 @@ const reducers = (state = initialState, action) => {
             return {
                 ...state
             };
-        case CIRCLECI_STEP:         // delete
+        case CIRCLECI_STEP:         // step
             return {
                 ...state,
                 step : action.step
+            };
+        case CIRCLECI_CONFIG:         // config
+            return {
+                ...state,
+                config : action.config
             };
         case CIRCLECI_FAIL:        // fail
             return { ...state, ...action.payload };

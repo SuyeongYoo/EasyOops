@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@mui/material": "^5.0.1",
+    "@mui/lab": "^5.0.0-alpha.59",
     "@mui/styles": "^5.0.1",
     "@emotion/react": "^11.4.1",
     "@emotion/styled": "^11.3.0",
@@ -21,7 +22,9 @@
     "redux-thunk": "^2.3.0",
     "web-vitals": "^1.1.2",
     "formik": "^2.2.9",
-    "yup": "^0.32.9"
+    "yup": "^0.32.9",
+    "jszip": "^3.7.1",
+    "file-saver": "^2.0.5"
   },
   "scripts": {
     "start": "react-scripts start",

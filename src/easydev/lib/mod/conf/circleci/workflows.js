@@ -34,45 +34,45 @@ export const workflows_main = (_in) => {
     let jsonJobs = {};
     jsonJobs['version'] = 2;
 
-    if(!_isEmpty(_in.git_develop_name)) {
-        jsonJobs['develop'] = workflows_jobs_main('01', _in.git_develop_name, _in.jobs_test_used);
+    if(!_isEmpty(_in.wp_develop_name)) {
+        jsonJobs['develop'] = workflows_jobs_main('01', _in);
     }
 
     if(!_isEmpty(_in.git_release_name)) {
-        jsonJobs['staging'] = workflows_jobs_main('02', _in.git_release_name, _in.jobs_test_used);
+        jsonJobs['staging'] = workflows_jobs_main('02', _in);
     }
 
     if(!_isEmpty(_in.git_master_name)) {
-        jsonJobs['production'] = workflows_jobs_main('03', _in.git_master_name, _in.jobs_test_used);
+        jsonJobs['production'] = workflows_jobs_main('03', _in);
     }
 
     return jsonJobs;
 }
 
 /* workflows >> jobs >> main */
-export const workflows_jobs_main = (_type, _in, _junit) => {
+export const workflows_jobs_main = (_type, _in) => {
 
     let jsonJobs = {};
     let jsonArr = [];
 
     // temp data config
     if(_type === '01') {         // develop
-        jsonArr.push(workflows_jobs_build(_in));
-        if(_junit === '01') {
+        jsonArr.push(workflows_jobs_build(_in.wp_develop_name, _in.wp_develop_env));
+        if(_in.jobs_test_used === '01') {
             jsonArr.push(workflows_jobs_test());
         }
-        jsonArr.push(workflows_jobs_upload(_junit));
-        jsonArr.push(workflows_jobs_deploy(_junit));
+        jsonArr.push(workflows_jobs_upload(_in.jobs_test_used, _in.wp_develop_env));
+        jsonArr.push(workflows_jobs_deploy(_in.jobs_test_used, _in.wp_develop_env));
     } else if(_type === '02') {  // release
-        jsonArr.push(workflows_jobs_build(_in));
-        jsonArr.push(workflows_jobs_upload(_junit));
-        jsonArr.push(workflows_jobs_hold(_junit));
-        jsonArr.push(workflows_jobs_deploy(_junit));
+        jsonArr.push(workflows_jobs_build(_in.wp_release_name, _in.wp_release_env));
+        jsonArr.push(workflows_jobs_upload(_in.jobs_test_used, _in.wp_release_env));
+        jsonArr.push(workflows_jobs_hold(_in.jobs_test_used));
+        jsonArr.push(workflows_jobs_deploy(_in.jobs_test_used, _in.wp_release_env));
     } else if(_type === '03') {  // master
-        jsonArr.push(workflows_jobs_build(_in));
-        jsonArr.push(workflows_jobs_upload(_junit));
-        jsonArr.push(workflows_jobs_hold(_junit));
-        jsonArr.push(workflows_jobs_deploy(_junit));
+        jsonArr.push(workflows_jobs_build(_in.wp_master_name, _in.wp_master_env));
+        jsonArr.push(workflows_jobs_upload(_in.jobs_test_used, _in.wp_master_env));
+        jsonArr.push(workflows_jobs_hold(_in.jobs_test_used));
+        jsonArr.push(workflows_jobs_deploy(_in.jobs_test_used, _in.wp_master_env));
     }
 
     jsonJobs['jobs'] = jsonArr;
@@ -80,16 +80,20 @@ export const workflows_jobs_main = (_type, _in, _junit) => {
 }
 
 /* workflows >> jobs >> build */
-export const workflows_jobs_build = (_in) => {
+export const workflows_jobs_build = (_name, _env) => {
 
     let jsonObj = {};
     let jsonFilters = {};
     let jsonBranches = {};
     let jsonOnly = {};
 
-    jsonOnly['only'] = _in;
+    jsonOnly['only'] = _name;
     jsonBranches['branches'] = jsonOnly;
+    if(!_isEmpty(_env)) {
+        jsonFilters['context'] = _env;
+    }
     jsonFilters['filters'] = jsonBranches;
+
     jsonObj['build'] = jsonFilters;
 
     return jsonObj;
@@ -110,7 +114,7 @@ export const workflows_jobs_test = () => {
 };
 
 /* workflows >> jobs >> upload */
-export const workflows_jobs_upload = (_type) => {
+export const workflows_jobs_upload = (_type, _env) => {
 
     let jsonObj = {};
     let jsonRequires = {};
@@ -119,6 +123,9 @@ export const workflows_jobs_upload = (_type) => {
     jsonBuild.push('build');
     if(_type === '01') {
         jsonBuild.push('test');
+    }
+    if(!_isEmpty(_env)) {
+        jsonRequires['context'] = _env;
     }
     jsonRequires['requires'] = jsonBuild;
     jsonObj['upload'] = jsonRequires;
@@ -146,7 +153,7 @@ export const workflows_jobs_hold = (_type) => {
 };
 
 /* workflows >> jobs >> deploy */
-export const workflows_jobs_deploy = (_type) => {
+export const workflows_jobs_deploy = (_type, _env) => {
 
     let jsonObj = {};
     let jsonRequires = {};
@@ -157,6 +164,9 @@ export const workflows_jobs_deploy = (_type) => {
         jsonBuild.push('test');
     }
     jsonBuild.push('upload');
+    if(!_isEmpty(_env)) {
+        jsonRequires['context'] = _env;
+    }
     jsonRequires['requires'] = jsonBuild;
 
     jsonObj['deploy'] = jsonRequires;

@@ -44,19 +44,23 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
+const handleAlert = (_msg) => {
+    alert(_msg);
+};
+
 const BaseHeader = () => {
     const classes = useStyles();
 
     return (
         <AppBar position="static">
             <Toolbar>
-                <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+                <IconButton onClick={() => handleAlert('Wait!! We\'ll give you a very easy experience.')} edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
                     <Menu />
                 </IconButton>
                 <Typography variant="h6" className={classes.title}>
                     EasyOops
                 </Typography>
-                <Button color="inherit">Login</Button>
+                <Button onClick={() => handleAlert('We do not handle personal information.')} color="inherit">Login</Button>
             </Toolbar>
         </AppBar>
     );

@@ -40,3 +40,4 @@ export const CIRCLECI_ADD = "CIRCLECI_ADD";
 export const CIRCLECI_UPD = "CIRCLECI_UPD";
 export const CIRCLECI_FAIL = "CIRCLECI_FAIL";
 export const CIRCLECI_STEP = "CIRCLECI_STEP";
+export const CIRCLECI_CONFIG = "CIRCLECI_CONFIG";

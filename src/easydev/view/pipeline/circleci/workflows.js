@@ -26,6 +26,7 @@
  * description  : devops ci/cd pipeline workflows
  **/
 import {
+    Button,
     Grid, Typography
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -35,7 +36,6 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import {_isEmpty} from "../../../lib/common";
 import FormText from "../../form/FormText";
-import FormSelect from "../../form/FormSelect";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -58,6 +58,10 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
+const handleSample = () => {
+    window.open('https://circleci.com/docs/2.0/contexts/');
+};
+
 const Workflows = forwardRef((props, ref) => {
     const classes = useStyles();
     const dispatch = useDispatch();
@@ -70,16 +74,20 @@ const Workflows = forwardRef((props, ref) => {
     const handleInit = useCallback(() => {
         let payload = {};
 
-        if (!circleci.info.hasOwnProperty('git_develop_name')
-            || !circleci.info.hasOwnProperty('git_release_name')
-            || !circleci.info.hasOwnProperty('git_master_name')
-            || !circleci.info.hasOwnProperty('jobs_test_used')) {
+        if (!circleci.info.hasOwnProperty('wp_develop_name')
+            || !circleci.info.hasOwnProperty('wp_release_name')
+            || !circleci.info.hasOwnProperty('wp_master_name')
+            || !circleci.info.hasOwnProperty('wp_develop_env')
+            || !circleci.info.hasOwnProperty('wp_release_env')
+            || !circleci.info.hasOwnProperty('wp_master_env')
+        ) {
             payload = circleci.info;
-            payload['git_develop_name'] = '';
-            payload['git_release_name'] = '';
-            payload['git_master_name'] = '';
-            payload['jobs_test_used'] = '02';
-            payload['jobs_mvn_used'] = '02';
+            payload['wp_develop_name'] = '';
+            payload['wp_release_name'] = '';
+            payload['wp_master_name'] = '';
+            payload['wp_develop_env'] = '';
+            payload['wp_release_env'] = '';
+            payload['wp_master_env'] = '';
             dispatch({
                 type:'CIRCLECI_GET_INFO',
                 payload: payload
@@ -94,11 +102,12 @@ const Workflows = forwardRef((props, ref) => {
     const handleNext = useCallback((v) => {
         let payload = {}
         payload = circleci.info;
-        payload['git_develop_name'] = v.git_develop_name;
-        payload['git_release_name'] = v.git_release_name;
-        payload['git_master_name'] = v.git_master_name;
-        payload['jobs_test_used'] = v.jobs_test_used;
-        payload['jobs_mvn_used'] = v.jobs_mvn_used;
+        payload['wp_develop_name'] = v.wp_develop_name;
+        payload['wp_release_name'] = v.wp_release_name;
+        payload['wp_master_name'] = v.wp_master_name;
+        payload['wp_develop_env'] = v.wp_develop_env;
+        payload['wp_release_env'] = v.wp_release_env;
+        payload['wp_master_env'] = v.wp_master_env;
         dispatch({
             type:'CIRCLECI_GET_INFO',
             payload: payload
@@ -112,14 +121,16 @@ const Workflows = forwardRef((props, ref) => {
                 innerRef={formRef}
                 enableReinitialize
                 initialValues={{
-                    git_develop_name: _isEmpty(circleci.info.git_develop_name) ? '' : circleci.info.git_develop_name,
-                    git_release_name: _isEmpty(circleci.info.git_release_name) ? '' : circleci.info.git_release_name,
-                    git_master_name: _isEmpty(circleci.info.git_master_name) ? '' : circleci.info.git_master_name,
-                    jobs_test_used: _isEmpty(circleci.info.jobs_test_used) ? '02' : circleci.info.jobs_test_used,
-                    jobs_mvn_used: _isEmpty(circleci.info.jobs_mvn_used) ? '02' : circleci.info.jobs_mvn_used
+                    wp_develop_name: _isEmpty(circleci.info.wp_develop_name) ? '' : circleci.info.wp_develop_name,
+                    wp_release_name: _isEmpty(circleci.info.wp_release_name) ? '' : circleci.info.wp_release_name,
+                    wp_master_name: _isEmpty(circleci.info.wp_master_name) ? '' : circleci.info.wp_master_name,
+
+                    wp_develop_env: _isEmpty(circleci.info.wp_develop_env) ? '' : circleci.info.wp_develop_env,
+                    wp_release_env: _isEmpty(circleci.info.wp_release_env) ? '' : circleci.info.wp_release_env,
+                    wp_master_env: _isEmpty(circleci.info.wp_master_env) ? '' : circleci.info.wp_master_env
                 }}
                 validationSchema={Yup.object().shape({
-                    git_develop_name: Yup.string().required('Please enter your git branch(develop) name information to checkout.')
+                    wp_develop_name: Yup.string().required('Please enter your git branch(develop) name information to checkout.')
                 })}
                 onSubmit={(v) => {
                     handleNext(v);
@@ -128,7 +139,7 @@ const Workflows = forwardRef((props, ref) => {
                 {({ errors, handleBlur, handleChange, handleSubmit, touched, values }) => (
                     <form onSubmit={handleSubmit}>
                         <Typography variant="h4" gutterBottom spacing={2}>
-                            Please enter information for GIT access.
+                            Finally, let's set up the workflow.
                         </Typography>
                         <Grid container
                               className={classes.root}
@@ -137,69 +148,80 @@ const Workflows = forwardRef((props, ref) => {
                               justifyContent="center"
                               alignItems="center"
                         >
-                            <Grid item xs={12}>
+                            <Grid item xs={6}>
                                 <FormText
                                     required={true}
-                                    id={"git_develop_name"}
-                                    label={"branch name(develop)"}
+                                    id={"wp_develop_name"}
+                                    label={"develop(branch name)"}
                                     placeholder={"develop"}
-                                    value={values.git_develop_name}
-                                    touched={touched.git_develop_name}
-                                    errors={errors.git_develop_name}
+                                    value={values.wp_develop_name}
+                                    touched={touched.wp_develop_name}
+                                    errors={errors.wp_develop_name}
                                     onBlur={handleBlur}
                                     onChange={handleChange}
                                 />
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid item xs={6}>
                                 <FormText
-                                    id={"git_release_name"}
-                                    label={"branch name(release)"}
+                                    required={true}
+                                    id={"wp_develop_env"}
+                                    label={"develop(context)"}
+                                    placeholder={"develop-context"}
+                                    value={values.wp_develop_env}
+                                    touched={touched.wp_develop_env}
+                                    errors={errors.wp_develop_env}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <FormText
+                                    id={"wp_release_name"}
+                                    label={"release(branch name)"}
                                     placeholder={"release"}
                                     //helperText="Please enter your git branch(release) name information to checkout."
-                                    value={values.git_release_name}
-                                    touched={touched.git_release_name}
-                                    errors={errors.git_release_name}
+                                    value={values.wp_release_name}
+                                    touched={touched.wp_release_name}
+                                    errors={errors.wp_release_name}
                                     onBlur={handleBlur}
                                     onChange={handleChange}
                                 />
                             </Grid>
-                            <Grid item xs={12}>
+                            <Grid item xs={6}>
                                 <FormText
-                                    id={"git_master_name"}
-                                    label={"branch name(master)"}
+                                    id={"wp_release_env"}
+                                    label={"release(context)"}
+                                    placeholder={"release-context"}
+                                    //helperText="Please enter your git branch(release) name information to checkout."
+                                    value={values.wp_release_env}
+                                    touched={touched.wp_release_env}
+                                    errors={errors.wp_release_env}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <FormText
+                                    id={"wp_master_name"}
+                                    label={"master(branch name)"}
                                     placeholder={"master"}
                                     //helperText="Please enter your git branch(master) name information to checkout."
-                                    value={values.git_master_name}
-                                    touched={touched.git_master_name}
-                                    errors={errors.git_master_name}
+                                    value={values.wp_master_name}
+                                    touched={touched.wp_master_name}
+                                    errors={errors.wp_master_name}
                                     onBlur={handleBlur}
                                     onChange={handleChange}
                                 />
                             </Grid>
-                            <Grid item xs={12}>
-                                <FormSelect
-                                    id={"jobs_test_used"}
-                                    label={"JUnit Test"}
-                                    placeholder={"master"}
-                                    firstDefault={false}
-                                    item={[{"code":"01", "name":"use"},{"code":"02", "name":"do not used"}]}
-                                    value={values.jobs_test_used}
-                                    touched={touched.jobs_test_used}
-                                    errors={errors.jobs_test_used}
-                                    onBlur={handleBlur}
-                                    onChange={handleChange}
-                                />
-                            </Grid>
-                            <Grid item xs={12}>
-                                <FormSelect
-                                    id={"jobs_mvn_used"}
-                                    label={"Maven"}
-                                    placeholder={"master"}
-                                    firstDefault={false}
-                                    item={[{"code":"01", "name":"use"},{"code":"02", "name":"do not used"}]}
-                                    value={values.jobs_mvn_used}
-                                    touched={touched.jobs_mvn_used}
-                                    errors={errors.jobs_mvn_used}
+                            <Grid item xs={6}>
+                                <FormText
+                                    id={"wp_master_env"}
+                                    label={"master(context)"}
+                                    placeholder={"master-context"}
+                                    //helperText="Please enter your git branch(master) name information to checkout."
+                                    value={values.wp_master_env}
+                                    touched={touched.wp_master_env}
+                                    errors={errors.wp_master_env}
                                     onBlur={handleBlur}
                                     onChange={handleChange}
                                 />
@@ -207,6 +229,12 @@ const Workflows = forwardRef((props, ref) => {
                             <Grid item xs={12}>
                                 <Typography variant="caption" display="block" gutterBottom>
                                     ● Workflows - Development / staging / production environment configuration is provided at the same time. Optional for staging/production configurations.
+                                </Typography>
+                                <Typography variant="caption" display="block" gutterBottom>
+                                    ● It is written based on the use of GIT.
+                                </Typography>
+                                <Typography variant="caption" display="block" gutterBottom>
+                                    ● SETTINGS >> Contexts >> Create Context <Button onClick={handleSample} >[SAMPLE]</Button>
                                 </Typography>
                             </Grid>
                         </Grid>

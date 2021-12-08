@@ -26,13 +26,17 @@
  * description  : devops ci/cd pipeline result
  **/
 import {
-    Grid, Typography, TextareaAutosize, Link
+    Grid, Typography, TextareaAutosize, Tab, Box
 } from '@mui/material';
+import {
+    TabContext, TabList, TabPanel
+} from '@mui/lab';
 import { makeStyles } from '@mui/styles';
-import React from 'react';
-import {_fileDownload, _jsonToYaml} from "../../../lib/common";
-import {config_cricleci} from "../../../lib/mod/conf/circleci";
-import {useSelector} from "react-redux";
+import React, {useCallback} from 'react';
+import { _jsonToYaml} from "../../../lib/common";
+import { config_cricleci, config_ant, config_start, config_stop} from "../../../lib/mod/conf/circleci";
+import { config_code_deploy } from "../../../lib/mod/conf/codedeploy";
+import { useDispatch, useSelector} from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -61,14 +65,13 @@ const useStyles = makeStyles((theme) => ({
 
 const Result = () => {
     const classes = useStyles();
+    const dispatch = useDispatch();
 
     const circleci = useSelector((state) => state.cricleci);
 
-    const handleDownload = () => {
-        let value = _jsonToYaml(config_cricleci(circleci.info));
-        let name = 'config.yml';
-        _fileDownload(name, value);
-    };
+    const handleChange = useCallback((e, v) => {
+        dispatch({type:'CIRCLECI_CONFIG', config:v});
+    },[dispatch]);
 
     return (
         <React.Fragment>
@@ -81,22 +84,93 @@ const Result = () => {
                   alignItems="center"
             >
                 <Grid item xs={12}>
-                    <TextareaAutosize
-                        maxRows={20}
-                        variant="outlined"
-                        className={classes.paper}
-                        aria-label="maximum height"
-                        placeholder="Maximum 4 rows"
-                        defaultValue={_jsonToYaml(config_cricleci(circleci.info))}
-                        style={{ width: '100%' }}
-                    />
+                    <Box sx={{ width: '100%', typography: 'body1' }}>
+                        <TabContext value={circleci.config}>
+                            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                                <TabList onChange={handleChange}>
+                                    <Tab label="circleci" value="1" />
+                                    <Tab label="ant" value="2" />
+                                    <Tab label="cd(aws)" value="3" />
+                                    <Tab label="stop" value="4" />
+                                    <Tab label="start" value="5" />
+                                </TabList>
+                            </Box>
+                            <TabPanel value="1">
+                                <Typography variant="caption" display="block" gutterBottom>
+                                    ● .circleci/config.yml - This is the default configuration file for CircleCI.
+                                </Typography>
+                                <TextareaAutosize
+                                    maxRows={20}
+                                    variant="outlined"
+                                    className={classes.paper}
+                                    aria-label="maximum height"
+                                    placeholder="Maximum 4 rows"
+                                    defaultValue={_jsonToYaml(config_cricleci(circleci.info))}
+                                    style={{ width: '100%' }}
+                                />
+                            </TabPanel>
+                            <TabPanel value="2">
+                                <Typography variant="caption" display="block" gutterBottom>
+                                    ● build.xml - This is the configuration file used when building Ant.
+                                </Typography>
+                                <TextareaAutosize
+                                    maxRows={20}
+                                    variant="outlined"
+                                    className={classes.paper}
+                                    aria-label="maximum height"
+                                    placeholder="Maximum 4 rows"
+                                    defaultValue={config_ant()}
+                                    style={{ width: '100%' }}
+                                />
+                            </TabPanel>
+                            <TabPanel value="3">
+                                <Typography variant="caption" display="block" gutterBottom>
+                                    ● appspec.yml - This is the configuration file used by AWS CodeDeploy.
+                                </Typography>
+                                <TextareaAutosize
+                                    maxRows={20}
+                                    variant="outlined"
+                                    className={classes.paper}
+                                    aria-label="maximum height"
+                                    placeholder="Maximum 4 rows"
+                                    defaultValue={_jsonToYaml(config_code_deploy(circleci.info))}
+                                    style={{ width: '100%' }}
+                                />
+                            </TabPanel>
+                            <TabPanel value="4">
+                                <Typography variant="caption" display="block" gutterBottom>
+                                    ● scripts/stop.sh - This is a shell script file for stopping the application.
+                                </Typography>
+                                <TextareaAutosize
+                                    maxRows={20}
+                                    variant="outlined"
+                                    className={classes.paper}
+                                    aria-label="maximum height"
+                                    placeholder="Maximum 4 rows"
+                                    defaultValue={config_stop()}
+                                    style={{ width: '100%' }}
+                                />
+                            </TabPanel>
+                            <TabPanel value="5">
+                                <Typography variant="caption" display="block" gutterBottom>
+                                    ● scripts/start.sh - This is a shell script file for starting the application.
+                                </Typography>
+                                <TextareaAutosize
+                                    maxRows={20}
+                                    variant="outlined"
+                                    className={classes.paper}
+                                    aria-label="maximum height"
+                                    placeholder="Maximum 4 rows"
+                                    defaultValue={config_start()}
+                                    style={{ width: '100%' }}
+                                />
+                            </TabPanel>
+                        </TabContext>
+                    </Box>
                 </Grid>
                 <Grid item xs={12}>
                     <Typography variant="caption" display="block" gutterBottom>
-                        ● It's done. You create a circle.yml file and write the result data. And put it in the GIT root. And use CircleCI.
-                    </Typography>
-                    <Typography variant="caption" display="block" gutterBottom>
-                        ● click here >> <Link href="#" onClick={handleDownload} >"file download"</Link>
+                        ● That's it, let's check each config file once.
                     </Typography>
                 </Grid>
             </Grid>
